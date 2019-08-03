@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Audiophile</string>
+
+    <!-- Notificaiton Channel -->
+    <string name="notification_channel">Now Playing</string>
+    <string name="notification_channel_description">Shows what music is currently playing</string>
+    <string name="notification_skip_to_previous">Skip to previous</string>
+    <string name="notification_play">play</string>
+    <string name="notification_pause">pause</string>
+    <string name="notification_skip_to_next">skip to next</string>
+</resources>
