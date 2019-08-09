@@ -76,9 +76,9 @@ class NotificationBuilder(private val context: Context) {
         if (shouldCreateNowPlayingChannel()) {
             createNowPlayingChannel()
         }
-
+        println("session token - ${sessionToken.token}")
         val controller = MediaControllerCompat(context, sessionToken)
-        val description = controller.metadata
+        val description = controller.metadata.description
         val playbackState = controller.playbackState
 
         val builder = NotificationCompat.Builder(context, NOW_PLAYING_CHANNEL)
@@ -109,8 +109,8 @@ class NotificationBuilder(private val context: Context) {
             .setShowCancelButton(true)
 
         return builder.setContentIntent(controller.sessionActivity)
-            .setContentText(description.displayTitle)
-            .setContentTitle(description.artist)
+            .setContentText(description.subtitle)
+            .setContentTitle(description.title)
             .setDeleteIntent(stopPendingIntent)
             .setOnlyAlertOnce(true)
             .setSmallIcon(R.drawable.ic_headset_black_24dp)

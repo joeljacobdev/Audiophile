@@ -29,8 +29,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.support.v4.media.MediaBrowserCompat.MediaItem
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.google.android.exoplayer2.Player
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
 import com.pcforgeek.audiophile.util.*
@@ -47,6 +49,9 @@ class MusicService : MediaBrowserServiceCompat() {
         ExoPlayerFactory.newSimpleInstance(this).apply {
             setAudioAttributes(audiophyAttributes, true)
         }
+    }
+    private val browserTree: BrowserTree by lazy {
+        BrowserTree(applicationContext, mediaSource)
     }
     private lateinit var mediaSource: MusicSource
     private lateinit var audioFocusRequest: AudioFocusRequest
@@ -67,39 +72,39 @@ class MusicService : MediaBrowserServiceCompat() {
     private var isForegroundService = false
 
 
-    private val callback = object : MediaSessionCompat.Callback() {
-        override fun onPlay() {
-        }
-
-        override fun onPause() {
-            super.onPause()
-        }
-
-        override fun onStop() {
-            super.onStop()
-        }
-
-        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-            super.onPlayFromMediaId(mediaId, extras)
-            println("onPlayFromMediaId - $mediaId")
-        }
-
-
-    }
+//    private val callback = object : MediaSessionCompat.Callback() {
+//        override fun onPlay() {
+//        }
+//
+//        override fun onPause() {
+//            super.onPause()
+//        }
+//
+//        override fun onStop() {
+//            super.onStop()
+//        }
+//
+//        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+//            super.onPlayFromMediaId(mediaId, extras)
+//            println("onPlayFromMediaId - $mediaId")
+//        }
+//
+//
+//    }
 
     override fun onCreate() {
         super.onCreate()
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+//        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
-                setOnAudioFocusChangeListener(afChangeListener)
-                setAudioAttributes(android.media.AudioAttributes.Builder().run {
-                    setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
-                    build()
-                })
-                build()
-            }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+//            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
+//                setOnAudioFocusChangeListener(afChangeListener)
+//                setAudioAttributes(android.media.AudioAttributes.Builder().run {
+//                    setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+//                    build()
+//                })
+//                build()
+//            }
 
         // Build a PendingIntent that can be used to launch the UI.
         val sessionActivityPendingIntent =
@@ -118,11 +123,6 @@ class MusicService : MediaBrowserServiceCompat() {
                 isActive = true
             }
         sessionToken = mediaSession.sessionToken
-
-        mediaSource = StorageMediaSource(applicationContext)
-        serviceScope.launch {
-            mediaSource.load()
-        }
 
 //        mediaSession = MediaSessionCompat(applicationContext, "audiophile").apply {
 //            // TODO What is transport control?
@@ -157,9 +157,14 @@ class MusicService : MediaBrowserServiceCompat() {
 
         notificationBuilder = NotificationBuilder(this)
         notificationManager = NotificationManagerCompat.from(this)
-
+        println("session token - ${mediaSession.sessionToken.token}")
         becomingNoisyReceiver =
             BecomingNoisyReceiver(context = this, sessionToken = mediaSession.sessionToken)
+
+        mediaSource = StorageMediaSource(applicationContext)
+        serviceScope.launch {
+            mediaSource.load()
+        }
 
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
 
@@ -169,7 +174,21 @@ class MusicService : MediaBrowserServiceCompat() {
 
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(playbackPreparer)
+//            connector.setQueueNavigator(UampQueueNavigator(mediaSession))
         }
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent) {
+        super.onTaskRemoved(rootIntent)
+
+        /**
+         * By stopping playback, the player will transition to [Player.STATE_IDLE]. This will
+         * cause a state change in the MediaSession, and (most importantly) call
+         * [MediaControllerCallback.onPlaybackStateChanged]. Because the playback state will
+         * be reported as [PlaybackStateCompat.STATE_NONE], the service will first remove
+         * itself as a foreground service, and will then call [stopSelf].
+         */
+        exoPlayer.stop(true)
     }
 
     override fun onDestroy() {
@@ -179,7 +198,6 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         serviceJob.cancel()
-        super.onDestroy()
     }
 
 
@@ -202,11 +220,14 @@ class MusicService : MediaBrowserServiceCompat() {
         }
     }
 
-    override fun onLoadChildren(parentId: String, result: Result<MutableList<MediaBrowserCompat.MediaItem>>) {
+    override fun onLoadChildren(parentId: String, result: Result<List<MediaBrowserCompat.MediaItem>>) {
+        println("MusicService onLoadChildren parentId=$parentId")
         val resultReady = mediaSource.whenReady { isLoaded ->
             if (isLoaded) {
-                val mediaItems = prepareMediaItemfromSource()
-                println("onLoadedChildren - ${mediaItems.size}")
+                val mediaItems = browserTree[parentId]?.map {
+                    MediaItem(it.description, it.flag)
+                }
+                println("onLoadedChildren - ${mediaItems?.size}")
                 result.sendResult(mediaItems)
             } else {
                 result.sendResult(null)
@@ -252,14 +273,38 @@ class MusicService : MediaBrowserServiceCompat() {
         return mediaItems
     }
 
+    /**
+     * Returns a list of [MediaItem]s that match the given search query
+     */
+    override fun onSearch(
+        query: String,
+        extras: Bundle?,
+        result: Result<List<MediaItem>>
+    ) {
+
+        val resultsSent = mediaSource.whenReady { successfullyInitialized ->
+            if (successfullyInitialized) {
+                val resultsList = mediaSource.search(query, extras ?: Bundle.EMPTY)
+                    .map { mediaMetadata ->
+                        MediaItem(mediaMetadata.description, MediaItem.FLAG_PLAYABLE)
+                    }
+                result.sendResult(resultsList)
+            }
+        }
+
+        if (!resultsSent) {
+            result.detach()
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
     }
-
-    private val afChangeListener = AudioManager.OnAudioFocusChangeListener {
-
-    }
+//
+//    private val afChangeListener = AudioManager.OnAudioFocusChangeListener {
+//
+//    }
 
     private fun removeNowPlayingNotification() {
         stopForeground(true)
