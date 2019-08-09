@@ -3,7 +3,7 @@ package com.pcforgeek.audiophile.db
 import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.pcforgeek.audiophile.NO_RES
+import com.pcforgeek.audiophile.home.NO_RES
 
 @Entity
 data class MediaItem(

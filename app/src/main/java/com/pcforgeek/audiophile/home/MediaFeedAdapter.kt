@@ -23,6 +23,7 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
     }
 
     override fun onBindViewHolder(holder: MediaItemCollapsedHolder, position: Int) {
+        println("MediaFeedAdapter onBindViewHolder $position")
         holder.bind(songList[position])
     }
 
