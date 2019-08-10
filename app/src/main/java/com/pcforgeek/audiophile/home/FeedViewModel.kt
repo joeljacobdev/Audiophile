@@ -81,19 +81,14 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
         override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
             val list = children.map { child ->
                 MediaItem(
-                    child.mediaId ?: "empty",
-                    child.description.title.toString(),
-                    child.description.subtitle.toString(),
-                    child.description.iconUri,
-                    55L,//TODO 6
-                    "",//path use util function
-                    child.description.iconUri,
-                    child.description.title.toString(),
-                    "",
-                    "",
-                    Uri.parse(""),//TODO
-                    0L,
-                    NO_RES
+                    id = child.mediaId ?: "empty",
+                    title = child.description.title.toString(),
+                    displayTitle = child.description.subtitle.toString(),
+                    mediaUri = child.description.mediaUri ?: Uri.parse(""),
+                    duration = 66L,//TODO 6
+                    albumId = 0L,
+                    artistId = 0L,
+                    albumArtUri = child.description.iconUri
                 )
             }
             println("FeedViewModel=$mediaId onLoadedChildren parentId=$parentId size=${list.size}")

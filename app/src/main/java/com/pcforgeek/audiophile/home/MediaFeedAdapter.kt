@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.db.MediaItem
 import kotlinx.android.synthetic.main.media_item_collapsed.view.*
@@ -39,7 +40,11 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
         fun bind(mediaItem: MediaItem) {
             mediaName.text = mediaItem.title
             mediaArtist.text = mediaItem.artist
-            mediaArt.background = ColorDrawable(Color.DKGRAY)
+            if (mediaItem.albumArtUri == null)
+                mediaArt.background = ColorDrawable(Color.DKGRAY)
+            else {
+                Glide.with(itemView.context).load(mediaItem.albumArtUri).into(mediaArt)
+            }
             itemView.setOnClickListener { listener.mediaItemClicked(mediaItem) }
         }
     }
