@@ -32,7 +32,9 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
         MediaStore.Audio.Media.DISPLAY_NAME,
         MediaStore.Audio.Media.DURATION,
         MediaStore.Audio.Media.ALBUM,
-        MediaStore.Audio.Media.ALBUM_ID
+        MediaStore.Audio.Media.ALBUM_ID,
+        MediaStore.Audio.Media.ARTIST_ID,
+        MediaStore.Audio.Media.DATE_ADDED
     )
 
     private suspend fun getAllAudioFiles(): List<MediaCursorItem> {
@@ -47,18 +49,17 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
             )
             cursor?.let {
                 while (cursor.moveToNext()) {
-                    val albumID = it.getLong(it.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))
-                    val songCover = Uri.parse("content://media/external/audio/albumart")
-                    val uriSongCover = ContentUris.withAppendedId(songCover, albumID)
                     val mediaItem = MediaCursorItem(
-                        it.getInt(0),
-                        it.getString(1),
-                        it.getString(2),
-                        it.getString(3),
-                        it.getString(4),
-                        it.getLong(5),
-                        it.getString(6),
-                        uriSongCover
+                        it.getLong(it.getColumnIndex(MediaStore.Audio.Media._ID)),
+                        it.getString(it.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
+                        it.getString(it.getColumnIndex(MediaStore.Audio.Media.TITLE)),
+                        it.getString(it.getColumnIndex(MediaStore.Audio.Media.DATA)),
+                        it.getString(it.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)),
+                        it.getLong(it.getColumnIndex(MediaStore.Audio.Media.DURATION)),
+                        it.getString(it.getColumnIndex(MediaStore.Audio.Media.ALBUM)),
+                        it.getLong(it.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)),
+                        it.getLong(it.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)),
+                        it.getInt(it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED))
                     )
                     songsList.add(mediaItem)
                 }
@@ -80,17 +81,15 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
                 val id = item.id.toString()
                 val displayTitle: String = item.displayTitle
                 val album: String = item.album
-                val displayIconUri: Uri? = null
-                val albumArtUri: Uri? = null
+                val albumArtUri: Uri? = MusicUtils.getAlbumCoverUri(item.albumId.toInt())
                 val mediaUri: Uri = Uri.parse(item.path)
-                //val artUri: String = item.songCoverUri
                 val duration: Long = item.duration
                 val title: String = item.title
                 val artist: String = item.artist
-                //val genre: String = item.genre
                 val mediaItem = MediaItem(
                     id = id,
-                    displayIconUri = displayIconUri,
+                    artistId = item.artistId,
+                    albumId = item.albumId,
                     album = album,
                     albumArtUri = albumArtUri,
                     mediaUri = mediaUri,
@@ -124,14 +123,13 @@ fun MediaMetadataCompat.Builder.from(mediaItem: MediaItem): MediaMetadataCompat.
     val durationInMs = TimeUnit.SECONDS.toMillis(mediaItem.duration)
     duration = durationInMs
     id = mediaItem.id
+    albumId = mediaItem.albumId
+    artistId = mediaItem.artistId
     title = mediaItem.title
     mediaUri = mediaItem.mediaUri.path//TODO
     album = mediaItem.album
-    //albumArt = mediaItem.albumArtUri
-    //artUri = mediaItem.artUri TODO
+    albumArtUri = mediaItem.albumArtUri?.encodedPath
     displayTitle = mediaItem.displayTitle
-    genre = mediaItem.genre
     artist = mediaItem.artist
-    //displayIconUri =
     return this
 }

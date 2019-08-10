@@ -9,11 +9,11 @@ import com.pcforgeek.audiophile.home.NO_RES
 data class MediaItem(
     @PrimaryKey
     val id: String,
+    val artistId: Long,
+    val albumId: Long,
     val displayTitle: String = "",
     val album: String = "",
-    val displayIconUri: Uri? = null,
     val duration: Long,
-    val artUri: String = "",//path use util function
     val albumArtUri: Uri?,
     val title: String = "",
     val artist: String = "",
