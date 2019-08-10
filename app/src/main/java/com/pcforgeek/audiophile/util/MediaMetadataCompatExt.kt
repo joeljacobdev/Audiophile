@@ -13,6 +13,14 @@ import com.google.android.exoplayer2.upstream.DataSource
 inline val MediaMetadataCompat.flag
     get() = this.getLong(METADATA_KEY_AUDIOPHILE_FLAGS).toInt()
 
+
+inline val MediaMetadataCompat.albumId
+    get() = this.getLong(METADATA_KEY_ALBUM_ID).toInt()
+
+
+inline val MediaMetadataCompat.artistId
+    get() = this.getLong(METADATA_KEY_ARTIST_ID).toInt()
+
 inline val MediaMetadataCompat.id: String?
     get() = getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
 
@@ -68,6 +76,19 @@ inline var MediaMetadataCompat.Builder.id: String? // TODO why here String is nu
     set(value) {
         putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, value)
     }
+
+inline var MediaMetadataCompat.Builder.artistId: Long
+    get() = throw IllegalAccessException("Cannot access data")
+    set(value) {
+        putLong(METADATA_KEY_ARTIST_ID, value)
+    }
+
+inline var MediaMetadataCompat.Builder.albumId: Long
+    get() = throw IllegalAccessException("Cannot access data")
+    set(value) {
+        putLong(METADATA_KEY_ALBUM_ID, value)
+    }
+
 
 inline var MediaMetadataCompat.Builder.title: String?
     get() = throw IllegalAccessException("Cannot access data")
@@ -176,3 +197,5 @@ fun List<MediaMetadataCompat>.toMediaSource(
 
 
 const val METADATA_KEY_AUDIOPHILE_FLAGS = "com.pcforgeek.audiophile.media.METADATA_KEY_AUDIOPHILE_FLAGS"
+const val METADATA_KEY_ARTIST_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ARTIST_ID"
+const val METADATA_KEY_ALBUM_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ALBUM_ID"
