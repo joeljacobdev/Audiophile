@@ -6,13 +6,13 @@ import android.provider.MediaStore
 
 object MusicUtils {
 
-    fun getMediaStoreAlbumCoverUri(albumId: Int): Uri {
+    fun getAlbumCoverUri(albumId: Int): Uri {
         val sArtworkUri = Uri.parse("content://media/external/audio/albumart")
 
         return ContentUris.withAppendedId(sArtworkUri, albumId.toLong())
     }
 
-    fun getSongFileUri(songId: Int): Uri {
+    fun getSongUri(songId: Int): Uri {
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songId.toLong())
     }
 }
