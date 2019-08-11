@@ -1,21 +1,21 @@
 package com.pcforgeek.audiophile.home
 
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.db.MediaItem
 import com.pcforgeek.audiophile.service.EMPTY_PLAYBACK_STATE
 import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
 import com.pcforgeek.audiophile.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FeedViewModel @Inject constructor(private val mediaSessionConnection: MediaSessionConnection) : ViewModel() {
@@ -95,6 +95,44 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
             _mediaList.postValue(list)
         }
 
+    }
+
+    suspend fun work(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
+        var mmr = MediaMetadataRetriever()
+        val list = children.map { child ->
+            var path: String
+            if (child.description.mediaUri?.path != null) {
+                mmr.setDataSource(child.description.mediaUri?.path)
+                val data = mmr.embeddedPicture
+                path = if (data != null) {
+                    val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
+                    withContext(Dispatchers.IO) {
+                        StorageUtils.createDirectoryAndSaveFile(
+                            bitmap, child.description.extras?.getInt(
+                                METADATA_KEY_ALBUM_ID
+                            ).toString()
+                        )
+                    }
+                } else {
+                    ""
+                }
+            } else {
+                path = ""
+            }
+            MediaItem(
+                id = child.mediaId ?: "empty",
+                title = child.description.title.toString(),
+                displayTitle = child.description.subtitle.toString(),
+                mediaUri = child.description.mediaUri
+                    ?: Uri.parse(""),
+                duration = 66L,//TODO 6
+                albumId = 0L,
+                artistId = 0L,
+                albumArtUri = child.description.iconUri
+            )
+        }
+        println("FeedViewModel=$mediaId onLoadedChildren parentId=$parentId size=${list.size}")
+        _mediaList.postValue(list)
     }
 
     fun mediaItemClicked(clickedItem: MediaItem) {
