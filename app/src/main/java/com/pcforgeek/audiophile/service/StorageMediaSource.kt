@@ -71,40 +71,7 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
 
     override suspend fun load() {
         val list = getAllAudioFiles()
-        val catalog = mutableListOf<MediaItem>()
-        list.forEach { item ->
-            println("${item.path}")
-            try {
-                mediaMetadataRetriever.setDataSource(
-                    item.path
-                )
-                val id = item.id.toString()
-                val displayTitle: String = item.displayTitle
-                val album: String = item.album
-                val albumArtUri: Uri? = MusicUtils.getAlbumCoverUri(item.albumId.toInt())
-                val mediaUri: Uri = Uri.parse(item.path)
-                val duration: Long = item.duration
-                val title: String = item.title
-                val artist: String = item.artist
-                val mediaItem = MediaItem(
-                    id = id,
-                    artistId = item.artistId,
-                    albumId = item.albumId,
-                    album = album,
-                    albumArtUri = albumArtUri,
-                    mediaUri = mediaUri,
-                    duration = duration,
-                    title = title,
-                    artist = artist,
-                    displayTitle = displayTitle
-                )
-                catalog.add(mediaItem)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        mediaList = catalog.map { song ->
+        mediaList = list.map { song ->
             MediaMetadataCompat.Builder()
                 .from(song)
                 .build()
@@ -114,22 +81,25 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
         } else {
             STATE_ERROR
         }
+        count = 0
     }
 
     override fun iterator(): Iterator<MediaMetadataCompat> = mediaList.iterator()
 }
 
-fun MediaMetadataCompat.Builder.from(mediaItem: MediaItem): MediaMetadataCompat.Builder {
+var count = 0
+fun MediaMetadataCompat.Builder.from(mediaItem: MediaCursorItem): MediaMetadataCompat.Builder {
     val durationInMs = TimeUnit.SECONDS.toMillis(mediaItem.duration)
-    duration = durationInMs
-    id = mediaItem.id
+    count++
+    //println("$count -> id = ${mediaItem.id} albumId = ${mediaItem.albumId} album = ${mediaItem.album}  artistId = ${mediaItem.artistId} artist = ${mediaItem.artist}")
+    id = mediaItem.id.toString()
     albumId = mediaItem.albumId
     artistId = mediaItem.artistId
     title = mediaItem.title
-    mediaUri = mediaItem.mediaUri.path//TODO
-    album = mediaItem.album
-    albumArtUri = mediaItem.albumArtUri?.encodedPath
+    duration = durationInMs
     displayTitle = mediaItem.displayTitle
+    mediaUri = mediaItem.path
+    album = mediaItem.album
     artist = mediaItem.artist
     return this
 }
