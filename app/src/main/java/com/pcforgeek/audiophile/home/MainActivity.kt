@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         volumeControlStream = AudioManager.STREAM_MUSIC
 
         viewpager.adapter = tabsAdapter
+        viewpager.offscreenPageLimit = 2
         tabs.setupWithViewPager(viewpager)
 
         viewModel.rootMediaId.observe(this, Observer {
