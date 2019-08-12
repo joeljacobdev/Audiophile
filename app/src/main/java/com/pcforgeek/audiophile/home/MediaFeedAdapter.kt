@@ -12,23 +12,37 @@ import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.db.MediaItem
 import kotlinx.android.synthetic.main.media_item_collapsed.view.*
 import android.media.MediaMetadataRetriever
+import kotlinx.android.synthetic.main.grid_item_view.view.*
 
 class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val listener: OnClick) :
-    RecyclerView.Adapter<MediaFeedAdapter.MediaItemCollapsedHolder>() {
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var mmr = MediaMetadataRetriever()
+    private var viewTypeGrid: Boolean = false
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemCollapsedHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.media_item_collapsed, parent, false)
-        return MediaItemCollapsedHolder(view)
+    fun isViewTypeGrid(viewTypeGrid: Boolean) {
+        this.viewTypeGrid = viewTypeGrid
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        if (viewTypeGrid) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.grid_item_view, parent, false)
+            return MediaTypeHolder(view)
+        } else {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.media_item_collapsed, parent, false)
+            return MediaItemCollapsedHolder(view)
+        }
     }
 
     override fun getItemCount(): Int {
         return songList.size
     }
 
-    override fun onBindViewHolder(holder: MediaItemCollapsedHolder, position: Int) {
-        holder.bind(songList[position])
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is MediaItemCollapsedHolder)
+            holder.bind(songList[position])
+        else if (holder is MediaTypeHolder)
+            holder.bind(songList[position])
     }
 
     fun addData(data: List<MediaItem>) {
@@ -64,8 +78,17 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
         }
     }
 
+    inner class MediaTypeHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val title = itemView.title
+        fun bind(mediaItem: MediaItem) {
+            itemView.background = ColorDrawable(Color.MAGENTA)
+            title.text = mediaItem.title
+            itemView.setOnClickListener { listener.mediaItemClicked(mediaItem, true) }
+        }
+    }
+
     interface OnClick {
-        fun mediaItemClicked(mediaItem: MediaItem)
+        fun mediaItemClicked(mediaItem: MediaItem, browsable: Boolean = false)
     }
 }
 

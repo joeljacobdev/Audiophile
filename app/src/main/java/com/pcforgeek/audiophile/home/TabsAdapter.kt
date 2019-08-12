@@ -1,6 +1,5 @@
 package com.pcforgeek.audiophile.home
 
-import android.os.Build
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -12,9 +11,15 @@ class TabsAdapter(private val fragmentManager: FragmentManager) : FragmentStateP
     override fun getItem(position: Int): Fragment {
         if (BuildConfig.DEBUG)
             println("TabAdapter position=$position")
-        val fragment = FeedFragment()
-        fragment.setMediaId(list[position])
-        return fragment
+        return when (list[position]) {
+            Constants.ALL_MEDIA_ID ->
+                FeedFragment.newInstance(list[position])
+            Constants.ALBUM_MEDIA_ID ->
+                GridFeedRootFragment.newInstance(list[position])
+            Constants.ARTIST_MEDIA_ID ->
+                GridFeedRootFragment.newInstance(list[position])
+            else -> Fragment()
+        }
     }
 
     override fun getCount(): Int {

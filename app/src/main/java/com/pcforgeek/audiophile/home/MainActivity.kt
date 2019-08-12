@@ -58,6 +58,18 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    override fun onBackPressed() {
+        val fragment = viewpager.adapter?.instantiateItem(viewpager, viewpager.currentItem)
+        if (fragment is GridFeedRootFragment) {
+            val frag = fragment.childFragmentManager.findFragmentById(R.id.gridFeedRootContainer)
+            if (frag is FeedFragment)
+                fragment.childFragmentManager.popBackStackImmediate()
+            else
+                super.onBackPressed()
+        } else
+            super.onBackPressed()
+    }
+
     companion object {
         const val EXTERNAL_STORAGE_READ_PERMISSION = 1
     }
