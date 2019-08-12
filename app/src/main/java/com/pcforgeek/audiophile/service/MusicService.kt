@@ -297,10 +297,6 @@ class MusicService : MediaBrowserServiceCompat() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return super.onStartCommand(intent, flags, startId)
-    }
 //
 //    private val afChangeListener = AudioManager.OnAudioFocusChangeListener {
 //

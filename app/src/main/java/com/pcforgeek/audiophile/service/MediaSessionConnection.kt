@@ -36,10 +36,12 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
     private lateinit var mediaController: MediaControllerCompat
 
     fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+        println("media session connector -> subscribe parentId=$parentId")
         mediaBrowser.subscribe(parentId, callback)
     }
 
     fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+        println("media session connector -> unsubscribe parentId=$parentId")
         mediaBrowser.unsubscribe(parentId, callback)
     }
 
