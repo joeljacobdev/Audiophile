@@ -22,13 +22,15 @@ import com.pcforgeek.audiophile.util.toMediaSource
 class MediaPlaybackPreparer(
     private val musicSource: MusicSource,
     private val exoPlayer: ExoPlayer,
-    private val dataSourceFactory: DefaultDataSourceFactory
+    private val dataSourceFactory: DefaultDataSourceFactory,
+    private val listener: OnPlaylistListener
 ) : MediaSessionConnector.PlaybackPreparer {
 
     override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
         musicSource.whenReady {
             val metadataList = musicSource.search(query ?: "", extras ?: Bundle.EMPTY)
             if (metadataList.isNotEmpty()) {
+                listener.onPlaylistCreated(metadataList)
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
                 exoPlayer.prepare(mediaSource)
                 // ?? no seek to here
@@ -59,6 +61,7 @@ class MediaPlaybackPreparer(
                 //
             } else {
                 val metadataList = buildPlaylist(item)
+                listener.onPlaylistCreated(metadataList)
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
 
                 val indexOfItem = metadataList.indexOf(item)
@@ -77,4 +80,8 @@ class MediaPlaybackPreparer(
     // create playlist by album
     private fun buildPlaylist(item: MediaMetadataCompat): List<MediaMetadataCompat> =
         musicSource.filter { item.album == it.album }
+
+    interface OnPlaylistListener {
+        fun onPlaylistCreated(list: List<MediaMetadataCompat>)
+    }
 }

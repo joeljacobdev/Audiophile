@@ -78,7 +78,7 @@ class NotificationBuilder(private val context: Context) {
         }
         println("session token - ${sessionToken.token}")
         val controller = MediaControllerCompat(context, sessionToken)
-        val description = controller.metadata.description
+        val description = controller.metadata
         val playbackState = controller.playbackState
 
         val builder = NotificationCompat.Builder(context, NOW_PLAYING_CHANNEL)
@@ -109,7 +109,7 @@ class NotificationBuilder(private val context: Context) {
             .setShowCancelButton(true)
 
         return builder.setContentIntent(controller.sessionActivity)
-            .setContentText(description.subtitle)
+            .setContentText(description.artist ?: "unknown")
             .setContentTitle(description.title)
             .setDeleteIntent(stopPendingIntent)
             .setOnlyAlertOnce(true)
