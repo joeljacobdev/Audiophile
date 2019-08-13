@@ -8,4 +8,16 @@
     <string name="notification_play">play</string>
     <string name="notification_pause">pause</string>
     <string name="notification_skip_to_next">skip to next</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Allowed caller template -->
+    <string name="allowed_caller_log">
+        Caller has a valid certificate, but its package doesn\'t match any expected package for the
+        given certificate. To allow this caller, add the following to the allowed callers list:\n
+        <![CDATA[
+        <signature name=\"%1$s\" package=\"%2$s\">\n\t<key>%3$s</key>\n</signature>\n
+        ]]>
+    </string>
 </resources>

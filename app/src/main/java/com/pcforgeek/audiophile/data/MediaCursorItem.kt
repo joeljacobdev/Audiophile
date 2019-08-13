@@ -1,14 +1,15 @@
-package com.pcforgeek.audiophile.service
+package com.pcforgeek.audiophile.data
 
-import android.net.Uri
 
 data class MediaCursorItem(
-    var id: Int,
+    var id: Long,
     var artist: String = "",
     var title: String,
     var path: String, // DATA
     var displayTitle: String = "", // DISPLAY_NAME
     var duration: Long,
     var album: String = "",
-    var songCoverUri: Uri
+    var albumId: Long,
+    var artistId: Long,
+    var dateAdded: Int
 )

@@ -1,40 +1,36 @@
-package com.pcforgeek.audiophile
+package com.pcforgeek.audiophile.home
 
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
-import com.pcforgeek.audiophile.db.MediaItem
+import androidx.lifecycle.*
+import com.pcforgeek.audiophile.R
+import com.pcforgeek.audiophile.data.MediaItem
 import com.pcforgeek.audiophile.service.EMPTY_PLAYBACK_STATE
 import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
-import com.pcforgeek.audiophile.util.id
-import com.pcforgeek.audiophile.util.isPlayEnabled
-import com.pcforgeek.audiophile.util.isPlaying
-import com.pcforgeek.audiophile.util.isPrepared
+import com.pcforgeek.audiophile.util.*
 import javax.inject.Inject
 
-class MainViewModel @Inject constructor(private val mediaSessionConnection: MediaSessionConnection) : ViewModel() {
+class FeedViewModel @Inject constructor(private val mediaSessionConnection: MediaSessionConnection) : ViewModel() {
 
     private val _mediaList = MutableLiveData<List<MediaItem>>()
     val mediaList: LiveData<List<MediaItem>>
         get() = _mediaList
-    private val _currentMedia = MutableLiveData<MediaItem>()
-    val currentMedia: LiveData<MediaItem>
-        get() = _currentMedia
+
+    private var mediaId: String = Constants.ROOT_MEDIA_ID
+    fun setMediaId(value: String) {
+        mediaId = value
+    }
 
 
     val rootMediaId: LiveData<String> =
         Transformations.map(mediaSessionConnection.isConnected) { isConnected ->
             if (isConnected) {
                 mediaSessionConnection.also {
-                    it.subscribe("/", subscriptionCallback)
+                    it.subscribe(mediaId, subscriptionCallback)
                     it.playbackState.observeForever(playbackStateObserver)
                     it.nowPlaying.observeForever(mediaMetadataObserver)
                 }
@@ -80,21 +76,17 @@ class MainViewModel @Inject constructor(private val mediaSessionConnection: Medi
         override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
             val list = children.map { child ->
                 MediaItem(
-                    child.mediaId ?: "empty",
-                    child.description.title.toString(),
-                    child.description.subtitle.toString(),
-                    child.description.iconUri,
-                    child.description.extras?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)!!,
-                    "",//path use util function
-                    child.description.iconUri,
-                    child.description.title.toString(),
-                    "",
-                    "",
-                    child.description.mediaUri!!,
-                    0L,
-                    NO_RES
+                    id = child.mediaId ?: "empty",
+                    title = child.description.title.toString(),
+                    displayTitle = child.description.subtitle.toString(),
+                    mediaUri = child.description.mediaUri ?: Uri.parse(""),
+                    duration = 66L,//TODO 6
+                    albumId = 0L,
+                    artistId = 0L,
+                    albumArtUri = child.description.iconUri
                 )
             }
+            println("FeedViewModel=$mediaId onLoadedChildren parentId=$parentId size=${list.size}")
             _mediaList.postValue(list)
         }
 
@@ -109,16 +101,7 @@ class MainViewModel @Inject constructor(private val mediaSessionConnection: Medi
         val transportControls = mediaSessionConnection.transportControls
 
         val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-        if (mediaItem?.id == null) {
-            println("mediaID is null")
-        }
-        if (nowPlaying == null) {
-            println("nowPlaying is null")
-        } else
-            if (nowPlaying.id == null) {
-                println("nowPlayingID is null")
-            }
-        println("playMedia -- isPrepared=$isPrepared mediaId=${mediaItem.id} nowPlayingId=${nowPlaying?.id}")
+
         if (isPrepared && mediaItem.id == nowPlaying?.id) {
             mediaSessionConnection.playbackState.value?.let { playbackState ->
                 when {

@@ -36,10 +36,12 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
     private lateinit var mediaController: MediaControllerCompat
 
     fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+        println("media session connector -> subscribe parentId=$parentId")
         mediaBrowser.subscribe(parentId, callback)
     }
 
     fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+        println("media session connector -> unsubscribe parentId=$parentId")
         mediaBrowser.unsubscribe(parentId, callback)
     }
 
@@ -53,6 +55,7 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
     ) = if (mediaBrowser.isConnected) {
         mediaController.sendCommand(command, parameters, object : ResultReceiver(Handler()) {
             override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                println("result Callback - $resultCode -- data = ${resultData.toString()}")
                 resultCallback(resultCode, resultData)
             }
         })
@@ -69,6 +72,7 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
          */
         override fun onConnected() {
             // Get a MediaController for the MediaSession.
+            println("session token - ${mediaBrowser.sessionToken.token}")
             mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
                 registerCallback(MediaControllerCallback())
             }
@@ -102,6 +106,7 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
         }
 
         override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {
+            super.onQueueChanged(queue)
         }
 
         override fun onSessionEvent(event: String?, extras: Bundle?) {

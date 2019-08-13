@@ -4,6 +4,7 @@
     package="com.pcforgeek.audiophile">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -16,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.pcforgeek.audiophile.MainActivity">
+        <activity android:name="com.pcforgeek.audiophile.home.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +25,8 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.pcforgeek.audiophile.service.MusicService"
+        <service
+            android:name="com.pcforgeek.audiophile.service.MusicService"
             android:enabled="true"
             android:exported="true"
             tools:ignore="ExportedService">
@@ -33,7 +35,7 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
-
+        <!--This receiver need to do action in notification-->
         <receiver android:name="androidx.media.session.MediaButtonReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />

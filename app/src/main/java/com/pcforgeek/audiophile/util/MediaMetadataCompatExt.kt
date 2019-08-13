@@ -2,11 +2,24 @@ package com.pcforgeek.audiophile.util
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
+
+@MediaBrowserCompat.MediaItem.Flags
+inline val MediaMetadataCompat.flag
+    get() = this.getLong(METADATA_KEY_AUDIOPHILE_FLAGS).toInt()
+
+
+inline val MediaMetadataCompat.albumId
+    get() = this.getLong(METADATA_KEY_ALBUM_ID).toInt()
+
+
+inline val MediaMetadataCompat.artistId
+    get() = this.getLong(METADATA_KEY_ARTIST_ID).toInt()
 
 inline val MediaMetadataCompat.id: String?
     get() = getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
@@ -58,11 +71,24 @@ inline val MediaMetadataCompat.mediaUri: Uri?
  * GETTERS
  */
 
-inline var MediaMetadataCompat.Builder.id: String? // TODO why here String is nullable
+inline var MediaMetadataCompat.Builder.id: String?
     get() = throw IllegalAccessException("Cannot access data")
     set(value) {
         putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, value)
     }
+
+inline var MediaMetadataCompat.Builder.artistId: Long
+    get() = throw IllegalAccessException("Cannot access data")
+    set(value) {
+        putLong(METADATA_KEY_ARTIST_ID, value)
+    }
+
+inline var MediaMetadataCompat.Builder.albumId: Long
+    get() = throw IllegalAccessException("Cannot access data")
+    set(value) {
+        putLong(METADATA_KEY_ALBUM_ID, value)
+    }
+
 
 inline var MediaMetadataCompat.Builder.title: String?
     get() = throw IllegalAccessException("Cannot access data")
@@ -147,12 +173,20 @@ inline var MediaMetadataCompat.Builder.mediaUri: String?
         putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, value)
     }
 
+@MediaBrowserCompat.MediaItem.Flags
+inline var MediaMetadataCompat.Builder.flag: Int
+    get() = throw IllegalAccessException("Cannot access data")
+    set(value) {
+        putLong(METADATA_KEY_AUDIOPHILE_FLAGS, value.toLong())
+    }
+
 fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory): ExtractorMediaSource =
     ExtractorMediaSource.Factory(dataSourceFactory)
         .createMediaSource(mediaUri)
 
 fun List<MediaMetadataCompat>.toMediaSource(
-    dataSourceFactory: DataSource.Factory): ConcatenatingMediaSource {
+    dataSourceFactory: DataSource.Factory
+): ConcatenatingMediaSource {
 
     val concatenatingMediaSource = ConcatenatingMediaSource()
     forEach {
@@ -161,3 +195,7 @@ fun List<MediaMetadataCompat>.toMediaSource(
     return concatenatingMediaSource
 }
 
+
+const val METADATA_KEY_AUDIOPHILE_FLAGS = "com.pcforgeek.audiophile.media.METADATA_KEY_AUDIOPHILE_FLAGS"
+const val METADATA_KEY_ARTIST_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ARTIST_ID"
+const val METADATA_KEY_ALBUM_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ALBUM_ID"

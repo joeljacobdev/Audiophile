@@ -1,19 +1,19 @@
-package com.pcforgeek.audiophile.db
+package com.pcforgeek.audiophile.data
 
 import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.pcforgeek.audiophile.NO_RES
+import com.pcforgeek.audiophile.home.NO_RES
 
 @Entity
 data class MediaItem(
     @PrimaryKey
     val id: String,
+    val artistId: Long,
+    val albumId: Long,
     val displayTitle: String = "",
     val album: String = "",
-    val displayIconUri: Uri? = null,
     val duration: Long,
-    val artUri: String = "",//path use util function
     val albumArtUri: Uri?,
     val title: String = "",
     val artist: String = "",

@@ -1,4 +1,4 @@
-package com.pcforgeek.audiophile.service
+package com.pcforgeek.audiophile.data
 
 import android.os.Build
 import android.os.Bundle
@@ -6,7 +6,6 @@ import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import androidx.annotation.IntDef
-import com.pcforgeek.audiophile.model.CategoryItem
 import com.pcforgeek.audiophile.util.*
 
 interface MusicSource : Iterable<MediaMetadataCompat> {
