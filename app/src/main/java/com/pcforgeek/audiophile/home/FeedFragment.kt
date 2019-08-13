@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.pcforgeek.audiophile.App
 
 import com.pcforgeek.audiophile.R
-import com.pcforgeek.audiophile.db.MediaItem
+import com.pcforgeek.audiophile.data.MediaItem
 import com.pcforgeek.audiophile.di.ViewModelFactory
 import com.pcforgeek.audiophile.util.PermissionUtils
 import kotlinx.android.synthetic.main.fragment_feed.*

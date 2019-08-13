@@ -1,16 +1,13 @@
-package com.pcforgeek.audiophile.service
+package com.pcforgeek.audiophile.data
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
-import android.net.Uri
 import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
-import com.pcforgeek.audiophile.db.MediaItem
 import com.pcforgeek.audiophile.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
-import android.content.ContentUris
 
 
 // HOW is abstract media source after being abstract have constructor invokation

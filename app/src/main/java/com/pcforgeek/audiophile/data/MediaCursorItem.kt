@@ -1,4 +1,4 @@
-package com.pcforgeek.audiophile.service
+package com.pcforgeek.audiophile.data
 
 
 data class MediaCursorItem(

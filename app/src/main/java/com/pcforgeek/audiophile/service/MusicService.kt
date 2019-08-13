@@ -4,11 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioFocusRequest
 import android.os.Bundle
-import android.text.TextUtils
-import androidx.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.media.AudioManager
-import android.os.Build
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -33,6 +30,8 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.util.Util
 import com.pcforgeek.audiophile.R
+import com.pcforgeek.audiophile.data.MusicSource
+import com.pcforgeek.audiophile.data.StorageMediaSource
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
 import com.pcforgeek.audiophile.util.*

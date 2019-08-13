@@ -3,6 +3,7 @@ package com.pcforgeek.audiophile.service
 import android.content.Context
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
+import com.pcforgeek.audiophile.data.MusicSource
 import com.pcforgeek.audiophile.util.*
 import com.pcforgeek.audiophile.util.Constants.ALBUM_MEDIA_ID
 import com.pcforgeek.audiophile.util.Constants.ALL_MEDIA_ID

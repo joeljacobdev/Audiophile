@@ -7,7 +7,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.lifecycle.*
 import com.pcforgeek.audiophile.R
-import com.pcforgeek.audiophile.db.MediaItem
+import com.pcforgeek.audiophile.data.MediaItem
 import com.pcforgeek.audiophile.service.EMPTY_PLAYBACK_STATE
 import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING

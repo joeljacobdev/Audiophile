@@ -1,4 +1,4 @@
-package com.pcforgeek.audiophile.db
+package com.pcforgeek.audiophile.data
 
 import android.net.Uri
 import androidx.room.Entity

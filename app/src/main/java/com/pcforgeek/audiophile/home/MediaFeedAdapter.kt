@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.R
-import com.pcforgeek.audiophile.db.MediaItem
+import com.pcforgeek.audiophile.data.MediaItem
 import kotlinx.android.synthetic.main.media_item_collapsed.view.*
 import android.media.MediaMetadataRetriever
 import kotlinx.android.synthetic.main.grid_item_view.view.*
