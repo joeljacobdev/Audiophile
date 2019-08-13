@@ -71,7 +71,7 @@ inline val MediaMetadataCompat.mediaUri: Uri?
  * GETTERS
  */
 
-inline var MediaMetadataCompat.Builder.id: String? // TODO why here String is nullable
+inline var MediaMetadataCompat.Builder.id: String?
     get() = throw IllegalAccessException("Cannot access data")
     set(value) {
         putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, value)

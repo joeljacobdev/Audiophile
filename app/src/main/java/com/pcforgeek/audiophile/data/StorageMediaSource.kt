@@ -78,17 +78,13 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
         } else {
             STATE_ERROR
         }
-        count = 0
     }
 
     override fun iterator(): Iterator<MediaMetadataCompat> = mediaList.iterator()
 }
 
-var count = 0
 fun MediaMetadataCompat.Builder.from(mediaItem: MediaCursorItem): MediaMetadataCompat.Builder {
     val durationInMs = TimeUnit.SECONDS.toMillis(mediaItem.duration)
-    count++
-    //println("$count -> id = ${mediaItem.id} albumId = ${mediaItem.albumId} album = ${mediaItem.album}  artistId = ${mediaItem.artistId} artist = ${mediaItem.artist}")
     id = mediaItem.id.toString()
     albumId = mediaItem.albumId
     artistId = mediaItem.artistId
