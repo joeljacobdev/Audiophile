@@ -9,8 +9,6 @@ import com.pcforgeek.audiophile.util.Constants
 class TabsAdapter(private val fragmentManager: FragmentManager) : FragmentStatePagerAdapter(fragmentManager) {
     private val list = listOf(Constants.ALL_MEDIA_ID, Constants.ALBUM_MEDIA_ID, Constants.ARTIST_MEDIA_ID)
     override fun getItem(position: Int): Fragment {
-        if (BuildConfig.DEBUG)
-            println("TabAdapter position=$position")
         return when (list[position]) {
             Constants.ALL_MEDIA_ID ->
                 FeedFragment.newInstance(list[position])
