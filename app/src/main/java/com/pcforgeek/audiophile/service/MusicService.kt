@@ -14,9 +14,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
@@ -32,7 +29,10 @@ import android.content.IntentFilter
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
+import com.google.android.exoplayer2.util.Util
+import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
 import com.pcforgeek.audiophile.util.*
@@ -61,6 +61,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var mediaController: MediaControllerCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
+    private lateinit var packageValidator: PackageValidator
 
     private lateinit var notificationBuilder: NotificationBuilder
     private lateinit var notificationManager: NotificationManagerCompat
@@ -168,14 +169,15 @@ class MusicService : MediaBrowserServiceCompat() {
 
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
 
-            val dataSourceFactory = DefaultDataSourceFactory(applicationContext, "Exoplayer-local")
+            val dataSourceFactory = DefaultDataSourceFactory(applicationContext, Util.getUserAgent(this, AUDIOPHILE_USER_AGENT), null)
 
             playbackPreparer = MediaPlaybackPreparer(mediaSource, exoPlayer, dataSourceFactory)
 
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(playbackPreparer)
-//            connector.setQueueNavigator(UampQueueNavigator(mediaSession))
+            //connector.setQueueNavigator(AudiophileQueueNavigator(mediaSession))
         }
+        packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
     }
 
     override fun onTaskRemoved(rootIntent: Intent) {
@@ -202,7 +204,7 @@ class MusicService : MediaBrowserServiceCompat() {
 
 
     override fun onGetRoot(clientPackageName: String, clientUid: Int, p2: Bundle?): BrowserRoot? {
-        val isKnownCaller = TextUtils.equals(clientPackageName, packageName)
+        val isKnownCaller = packageValidator.isKnownCaller(clientPackageName, clientUid)
         return if (isKnownCaller) {
             val rootExtras = Bundle().apply {
                 putBoolean(CONTENT_STYLE_SUPPORTED, true)
@@ -238,39 +240,6 @@ class MusicService : MediaBrowserServiceCompat() {
             println("onLoadedChildren - resultNotReady")
             result.detach()
         }
-    }
-
-    private fun prepareMediaItemfromSource(): MutableList<MediaBrowserCompat.MediaItem> {
-        val mediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
-        mediaSource.forEach { track ->
-            val mediaId = track.id ?: "empty"
-            //Artist song
-            val title = track.displayTitle
-            //Artist name
-            val subTitle = track.description.subtitle.toString()
-            //Artist album
-            val description = track.description.description.toString()
-            //Song duration
-            val duration = track.duration
-            val songDuration = Bundle()
-            songDuration.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-            //songDuration.putParcelable(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, track.mediaUri)
-
-            val desc = MediaDescriptionCompat.Builder()
-                .setTitle(title)
-                .setSubtitle(subTitle)
-                .setMediaUri(track.mediaUri)
-                .setMediaId(mediaId)
-                .setExtras(songDuration)
-                .build()
-
-            val songList = MediaBrowserCompat.MediaItem(
-                desc,
-                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-            )
-            mediaItems.add(songList)
-        }
-        return mediaItems
     }
 
     /**
@@ -380,6 +349,15 @@ class MusicService : MediaBrowserServiceCompat() {
 
 }
 
+private class AudiophileQueueNavigator(
+    mediaSession: MediaSessionCompat
+) : TimelineQueueNavigator(mediaSession) {
+    private val window = Timeline.Window()
+    override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
+        player.currentTimeline
+            .getWindow(windowIndex, window, true).tag as MediaDescriptionCompat
+}
+
 private class BecomingNoisyReceiver(
     private val context: Context,
     sessionToken: MediaSessionCompat.Token
@@ -416,4 +394,5 @@ private const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_ST
 private const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
 private const val CONTENT_STYLE_LIST = 1
 private const val CONTENT_STYLE_GRID = 2
+private const val AUDIOPHILE_USER_AGENT = "audiophile"
 
