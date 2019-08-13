@@ -27,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        App.component.inject(this)
+        volumeControlStream = AudioManager.STREAM_MUSIC
         if (!PermissionUtils.isPermissionGranted(
                 this, arrayOf(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -39,21 +41,27 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                 EXTERNAL_STORAGE_READ_PERMISSION
             )
+        } else {
+            setupViewpager()
         }
-        App.component.inject(this)
-        volumeControlStream = AudioManager.STREAM_MUSIC
-
-        viewpager.adapter = tabsAdapter
-        viewpager.offscreenPageLimit = 2
-        tabs.setupWithViewPager(viewpager)
-
-        viewModel.rootMediaId.observe(this, Observer {
-        })
 
     }
 
+    private fun setupViewpager() {
+        progress.makeGone()
+        tabs.makeVisible()
+        viewpager.makeVisible()
+        viewpager.adapter = tabsAdapter
+        viewpager.offscreenPageLimit = 2
+        tabs.setupWithViewPager(viewpager)
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (requestCode == EXTERNAL_STORAGE_READ_PERMISSION && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == EXTERNAL_STORAGE_READ_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                setupViewpager()
+            else
+                finish()
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
