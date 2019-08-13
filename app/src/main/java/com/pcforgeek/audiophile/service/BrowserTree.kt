@@ -45,15 +45,15 @@ class BrowserTree(context: Context, musicSource: MusicSource) {
         rootlist += artistMediaMetadata
         mediaIdToChildrenMapper[ROOT_MEDIA_ID] = rootlist
         musicSource.forEach { item ->
-            val albumId = item.albumId.toString()
+            val albumId = item.album ?: UNKNOWN_ALBUM_ID
             val albumChildren = mediaIdToChildrenMapper[albumId] ?: buildAlbumRoot(item)
             albumChildren += item
             mediaIdToChildrenMapper[albumId] = albumChildren
 
-            val artistId = item.artistId.toString()
+            val artistId = item.artist ?: UNKNOWN_ARTIST_ID
             val artistChildren = mediaIdToChildrenMapper[artistId] ?: buildArtistRoot(item)
             artistChildren += item
-            mediaIdToChildrenMapper[artistId] = albumChildren
+            mediaIdToChildrenMapper[artistId] = artistChildren
 
             val allChildren = mediaIdToChildrenMapper[ALL_MEDIA_ID] ?: mutableListOf()
             allChildren += item
@@ -67,22 +67,22 @@ class BrowserTree(context: Context, musicSource: MusicSource) {
 
     private fun buildAlbumRoot(mediaItem: MediaMetadataCompat): MutableList<MediaMetadataCompat> {
         val albumMetadata = MediaMetadataCompat.Builder().apply {
-            id = mediaItem.albumId.toString()
-            title = mediaItem.album
+            id = mediaItem.album ?: UNKNOWN_ALBUM_ID
+            title = mediaItem.album ?: UNKNOWN
             flag = MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
         }.build()
         val rootList = mediaIdToChildrenMapper[ALBUM_MEDIA_ID] ?: mutableListOf()
         rootList += albumMetadata
         mediaIdToChildrenMapper[ALBUM_MEDIA_ID] = rootList
         return mutableListOf<MediaMetadataCompat>().also {
-            mediaIdToChildrenMapper[mediaItem.albumId.toString()] = it
+            mediaIdToChildrenMapper[mediaItem.album ?: UNKNOWN_ALBUM_ID] = it
         }
     }
 
     private fun buildArtistRoot(mediaItem: MediaMetadataCompat): MutableList<MediaMetadataCompat> {
         val artistMetadata = MediaMetadataCompat.Builder().apply {
-            id = mediaItem.artistId.toString()
-            title = mediaItem.artist ?: "unknown"
+            id = mediaItem.artist ?: UNKNOWN_ARTIST_ID
+            title = mediaItem.artist ?: UNKNOWN
             flag = MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
         }.build()
 
@@ -91,9 +91,13 @@ class BrowserTree(context: Context, musicSource: MusicSource) {
         mediaIdToChildrenMapper[ARTIST_MEDIA_ID] = rootList
 
         return mutableListOf<MediaMetadataCompat>().also {
-            mediaIdToChildrenMapper[mediaItem.artistId.toString()] = it
+            mediaIdToChildrenMapper[mediaItem.artist ?: UNKNOWN_ARTIST_ID] = it
         }
     }
 
     operator fun get(mediaId: String) = mediaIdToChildrenMapper[mediaId]
 }
+
+const val UNKNOWN = "<unknown>"
+const val UNKNOWN_ARTIST_ID = "<unknown_artist>"
+const val UNKNOWN_ALBUM_ID = "<unknown_album>"
