@@ -37,7 +37,12 @@ import com.pcforgeek.audiophile.notifcation.NotificationBuilder
 import com.pcforgeek.audiophile.util.*
 
 
-class MusicService : MediaBrowserServiceCompat() {
+class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlaylistListener {
+    override fun onPlaylistCreated(list: List<MediaMetadataCompat>) {
+        playlist.clear()
+        playlist.addAll(list)
+    }
+
     // A class to encapsulate a collection of attributes describing information about an audio stream.
     private val audiophyAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
@@ -70,6 +75,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     private var isForegroundService = false
+    private val playlist = mutableListOf<MediaMetadataCompat>()
 
 
 //    private val callback = object : MediaSessionCompat.Callback() {
@@ -168,13 +174,14 @@ class MusicService : MediaBrowserServiceCompat() {
 
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
 
-            val dataSourceFactory = DefaultDataSourceFactory(applicationContext, Util.getUserAgent(this, AUDIOPHILE_USER_AGENT), null)
+            val dataSourceFactory =
+                DefaultDataSourceFactory(applicationContext, Util.getUserAgent(this, AUDIOPHILE_USER_AGENT), null)
 
-            playbackPreparer = MediaPlaybackPreparer(mediaSource, exoPlayer, dataSourceFactory)
+            playbackPreparer = MediaPlaybackPreparer(mediaSource, exoPlayer, dataSourceFactory, this)
 
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(playbackPreparer)
-            //connector.setQueueNavigator(AudiophileQueueNavigator(mediaSession))
+            connector.setQueueNavigator(AudiophileQueueNavigator(mediaSession))
         }
         packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
     }
@@ -341,20 +348,18 @@ class MusicService : MediaBrowserServiceCompat() {
         }
     }
 
+    inner class AudiophileQueueNavigator(
+        mediaSession: MediaSessionCompat
+    ) : TimelineQueueNavigator(mediaSession) {
+        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
+            playlist[windowIndex].description
+    }
+
     companion object {
         const val AUDIOPHY_ROOT_ID = "/"
         const val AUDIOPHY_EMPTY_ROOT = "@empty@"
     }
 
-}
-
-private class AudiophileQueueNavigator(
-    mediaSession: MediaSessionCompat
-) : TimelineQueueNavigator(mediaSession) {
-    private val window = Timeline.Window()
-    override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
-        player.currentTimeline
-            .getWindow(windowIndex, window, true).tag as MediaDescriptionCompat
 }
 
 private class BecomingNoisyReceiver(
