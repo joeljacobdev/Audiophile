@@ -77,27 +77,6 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
     private var isForegroundService = false
     private val playlist = mutableListOf<MediaMetadataCompat>()
 
-
-//    private val callback = object : MediaSessionCompat.Callback() {
-//        override fun onPlay() {
-//        }
-//
-//        override fun onPause() {
-//            super.onPause()
-//        }
-//
-//        override fun onStop() {
-//            super.onStop()
-//        }
-//
-//        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-//            super.onPlayFromMediaId(mediaId, extras)
-//            println("onPlayFromMediaId - $mediaId")
-//        }
-//
-//
-//    }
-
     override fun onCreate() {
         super.onCreate()
 //        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -121,41 +100,10 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         // Create a new MediaSession.
         mediaSession = MediaSessionCompat(this, "MusicService")
             .apply {
-                setFlags(
-                    MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-                            or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-                )
                 setSessionActivity(sessionActivityPendingIntent)
                 isActive = true
+                setSessionToken(sessionToken)
             }
-        sessionToken = mediaSession.sessionToken
-
-//        mediaSession = MediaSessionCompat(applicationContext, "audiophile").apply {
-//            // TODO What is transport control?
-//            setFlags(
-//                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-//                        or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-//            )
-//            // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
-//            // what is the difference between ACTION_PAUSE and ACTION_PLAY_PAUSE
-//            stateBuilder = PlaybackStateCompat.Builder()
-//                .setActions(
-//                    PlaybackStateCompat.ACTION_PLAY
-//                            or PlaybackStateCompat.ACTION_PLAY_PAUSE
-//                )
-//            setPlaybackState(stateBuilder.build())
-//
-//            isActive = true
-//
-//            // We will set it to null since we don't want a MediaPlayer button to start our app if it has been stopped
-//            setMediaButtonReceiver(null)
-//
-//            // MySessionCallback() has methods that handle callbacks from a media controller
-//            setCallback(callback)
-//
-//            // Set the session's token so that client activities can communicate with it.
-//            setSessionToken(sessionToken)
-//        }
 
         mediaController = MediaControllerCompat(this, mediaSession).also {
             it.registerCallback(MediaControllerCallback())
@@ -163,7 +111,6 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
 
         notificationBuilder = NotificationBuilder(this)
         notificationManager = NotificationManagerCompat.from(this)
-        println("session token - ${mediaSession.sessionToken.token}")
         becomingNoisyReceiver =
             BecomingNoisyReceiver(context = this, sessionToken = mediaSession.sessionToken)
 
@@ -348,11 +295,12 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         }
     }
 
-    inner class AudiophileQueueNavigator(
+    private inner class AudiophileQueueNavigator(
         mediaSession: MediaSessionCompat
     ) : TimelineQueueNavigator(mediaSession) {
-        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
-            playlist[windowIndex].description
+        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
+            return playlist[windowIndex].description
+        }
     }
 
     companion object {
