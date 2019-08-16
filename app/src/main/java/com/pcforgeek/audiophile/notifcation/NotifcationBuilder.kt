@@ -27,18 +27,11 @@ import androidx.media.app.NotificationCompat.MediaStyle
 import androidx.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat.ACTION_PAUSE
-import android.support.v4.media.session.PlaybackStateCompat.ACTION_PLAY
-import android.support.v4.media.session.PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-import android.support.v4.media.session.PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-import android.support.v4.media.session.PlaybackStateCompat.ACTION_STOP
+import android.support.v4.media.session.PlaybackStateCompat.*
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.R
-import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.util.*
-import javax.inject.Inject
 
-// TODO
 const val NOW_PLAYING_CHANNEL: String = "com.pcforgeek.audiophy.service.media.NOW_PLAYING"
 const val NOW_PLAYING_NOTIFICATION: Int = 0xb339
 
@@ -48,9 +41,6 @@ const val NOW_PLAYING_NOTIFICATION: Int = 0xb339
 class NotificationBuilder(private val context: Context) {
     private val platformNotificationManager: NotificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-    @Inject
-    lateinit var mediaSessionConnection: MediaSessionConnection
 
     private val skipToPreviousAction = NotificationCompat.Action(
         R.drawable.exo_controls_previous,
@@ -76,7 +66,6 @@ class NotificationBuilder(private val context: Context) {
         if (shouldCreateNowPlayingChannel()) {
             createNowPlayingChannel()
         }
-        println("session token - ${sessionToken.token}")
         val controller = MediaControllerCompat(context, sessionToken)
         val description = controller.metadata
         val playbackState = controller.playbackState
