@@ -52,27 +52,23 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
     }
 
     inner class MediaItemCollapsedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val mediaName = itemView.mediaName
-        private val mediaArtist = itemView.mediaArtist
-        private val mediaArt = itemView.mediaArtThumbnail
+        private val name = itemView.name
+        private val artist = itemView.artist
+        private val thumbnail = itemView.thumbnail
         fun bind(mediaItem: MediaItem) {
-            mediaName.text = mediaItem.title
-            mediaArtist.text = mediaItem.artist
-            if (mediaItem.albumArtUri == null)
-                mediaArt.background = ColorDrawable(Color.DKGRAY)
-            else {
-                try {
-                    mmr.setDataSource(mediaItem.mediaUri.path)
-                    val data = mmr.embeddedPicture
-                    if (data == null) {
-                        mediaArt.background = ColorDrawable(Color.DKGRAY)
-                    } else {
-                        val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
-                        Glide.with(itemView.context).load(bitmap).thumbnail(0.1f).into(mediaArt)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+            name.text = mediaItem.title
+            artist.text = mediaItem.artist
+            try {
+                mmr.setDataSource(mediaItem.mediaUri.path)
+                val data = mmr.embeddedPicture
+                if (data == null) {
+                    thumbnail.background = ColorDrawable(Color.DKGRAY)
+                } else {
+                    val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
+                    Glide.with(itemView.context).load(bitmap).thumbnail(0.1f).into(thumbnail)
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
             itemView.setOnClickListener { listener.mediaItemClicked(mediaItem) }
         }
@@ -81,7 +77,6 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
     inner class MediaTypeHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title = itemView.title
         fun bind(mediaItem: MediaItem) {
-            itemView.background = ColorDrawable(Color.MAGENTA)
             title.text = mediaItem.title
             itemView.setOnClickListener { listener.mediaItemClicked(mediaItem, true) }
         }

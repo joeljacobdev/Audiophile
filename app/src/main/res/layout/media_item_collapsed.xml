@@ -3,37 +3,44 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    android:layout_marginTop="1dp"
+    android:layout_marginBottom="1dp"
+    android:background="@color/dark_item">
 
     <ImageView
-        android:id="@+id/mediaArtThumbnail"
+        android:id="@+id/thumbnail"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/mediaName"
+        android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/mediaArtThumbnail"
-        app:layout_constraintTop_toTopOf="@+id/mediaArtThumbnail"
+        android:textColor="@color/dark_primary_font"
+        android:textSize="14sp"
+        app:layout_constraintStart_toEndOf="@+id/thumbnail"
+        app:layout_constraintTop_toTopOf="@+id/thumbnail"
         tools:text="Rescue Me" />
 
     <TextView
-        android:id="@+id/mediaArtist"
+        android:id="@+id/artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@+id/mediaName"
-        app:layout_constraintTop_toBottomOf="@+id/mediaName"
+        android:textColor="@color/dark_secondary_font"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/name"
+        app:layout_constraintTop_toBottomOf="@+id/name"
         tools:text="OneRepublic" />
 
 

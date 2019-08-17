@@ -24,10 +24,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tabGravity="fill"
-        app:tabIndicatorColor="#FF001F"
-        app:tabIndicatorHeight="4dp"
-        app:tabSelectedTextColor="#FF001F"
-        app:tabTextColor="#000000" />
+        android:background="@color/dark_background"
+        app:tabIndicatorColor="@color/dark_indicator"
+        app:tabIndicatorHeight="2dp"
+        app:tabSelectedTextColor="@color/dark_indicator"
+        app:tabTextColor="@color/dark_primary_font" />
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewpager"
