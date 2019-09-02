@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.MediaItem
-import kotlinx.android.synthetic.main.media_item_collapsed.view.*
 import android.media.MediaMetadataRetriever
 import kotlinx.android.synthetic.main.grid_item_view.view.*
+import kotlinx.android.synthetic.main.media_feed_item_view.view.*
 
 class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val listener: OnClick) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -27,10 +27,10 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (viewTypeGrid) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.grid_item_view, parent, false)
-            return MediaTypeHolder(view)
+            return GridItemHolder(view)
         } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.media_item_collapsed, parent, false)
-            return MediaItemCollapsedHolder(view)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.media_feed_item_view, parent, false)
+            return MediaFeedItemHolder(view)
         }
     }
 
@@ -39,9 +39,9 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is MediaItemCollapsedHolder)
+        if (holder is MediaFeedItemHolder)
             holder.bind(songList[position])
-        else if (holder is MediaTypeHolder)
+        else if (holder is GridItemHolder)
             holder.bind(songList[position])
     }
 
@@ -51,7 +51,7 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
         notifyDataSetChanged()
     }
 
-    inner class MediaItemCollapsedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class MediaFeedItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val name = itemView.name
         private val artist = itemView.artist
         private val thumbnail = itemView.thumbnail
@@ -74,7 +74,7 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
         }
     }
 
-    inner class MediaTypeHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class GridItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title = itemView.title
         fun bind(mediaItem: MediaItem) {
             title.text = mediaItem.title

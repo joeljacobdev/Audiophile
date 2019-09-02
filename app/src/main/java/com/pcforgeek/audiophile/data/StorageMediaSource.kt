@@ -89,10 +89,10 @@ fun MediaMetadataCompat.Builder.from(mediaItem: MediaCursorItem): MediaMetadataC
     albumId = mediaItem.albumId
     artistId = mediaItem.artistId
     title = mediaItem.title
-    duration = durationInMs
     displayTitle = mediaItem.displayTitle
-    mediaUri = mediaItem.path
+    duration = durationInMs
     album = mediaItem.album
     artist = mediaItem.artist
+    mediaUri = mediaItem.path
     return this
 }
