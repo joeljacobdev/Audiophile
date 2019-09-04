@@ -13,6 +13,8 @@ import com.google.android.exoplayer2.upstream.DataSource
 inline val MediaMetadataCompat.flag
     get() = this.getLong(METADATA_KEY_AUDIOPHILE_FLAGS).toInt()
 
+inline val MediaMetadataCompat.type
+    get() = this.getLong(METADATA_KEY_TYPE).toInt()
 
 inline val MediaMetadataCompat.albumId
     get() = this.getLong(METADATA_KEY_ALBUM_ID).toInt()
@@ -180,6 +182,12 @@ inline var MediaMetadataCompat.Builder.flag: Int
         putLong(METADATA_KEY_AUDIOPHILE_FLAGS, value.toLong())
     }
 
+inline var MediaMetadataCompat.Builder.type: Int
+    get() = throw IllegalAccessException("Cannot access data")
+    set(value) {
+        putLong(METADATA_KEY_TYPE, value.toLong())
+    }
+
 fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory): ExtractorMediaSource =
     ExtractorMediaSource.Factory(dataSourceFactory)
         .createMediaSource(mediaUri)
@@ -196,6 +204,10 @@ fun List<MediaMetadataCompat>.toMediaSource(
 }
 
 
-const val METADATA_KEY_AUDIOPHILE_FLAGS = "com.pcforgeek.audiophile.media.METADATA_KEY_AUDIOPHILE_FLAGS"
+const val METADATA_KEY_AUDIOPHILE_FLAGS =
+    "com.pcforgeek.audiophile.media.METADATA_KEY_AUDIOPHILE_FLAGS"
 const val METADATA_KEY_ARTIST_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ARTIST_ID"
 const val METADATA_KEY_ALBUM_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ALBUM_ID"
+const val METADATA_KEY_TYPE = "com.pcforgeek.audiophile.media.METADATA_KEY_TYPE"
+const val METADATA_KEY_PLAY_COUNT = "com.pcforgeek.audiophile.media.METADATA_KEY_PLAY_COUNT"
+const val METADATA_KEY_FAVOURITE = "com.pcforgeek.audiophile.media.METADATA_KEY_FAVOURITE"

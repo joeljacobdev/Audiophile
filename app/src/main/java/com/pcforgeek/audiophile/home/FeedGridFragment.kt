@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.BuildConfig
 import com.pcforgeek.audiophile.R
-import com.pcforgeek.audiophile.data.MediaItem
+import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.di.ViewModelFactory
 import com.pcforgeek.audiophile.util.PermissionUtils
 import kotlinx.android.synthetic.main.fragment_feed_grid.*
@@ -85,7 +85,7 @@ class FeedGridFragment : Fragment(), MediaFeedAdapter.OnClick {
         }
     }
 
-    override fun mediaItemClicked(mediaItem: MediaItem, browsable: Boolean) {
+    override fun mediaItemClicked(mediaItem: SongItem, browsable: Boolean) {
         if (browsable) {
             if (BuildConfig.DEBUG)
                 println("Browsed to mediaItemID=${mediaItem.id} title=${mediaItem.title}")

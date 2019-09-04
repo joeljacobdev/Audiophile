@@ -9,7 +9,6 @@ import android.content.IntentFilter
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Bundle
-import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -122,9 +121,14 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
 
             val dataSourceFactory =
-                DefaultDataSourceFactory(applicationContext, Util.getUserAgent(this, AUDIOPHILE_USER_AGENT), null)
+                DefaultDataSourceFactory(
+                    applicationContext,
+                    Util.getUserAgent(this, AUDIOPHILE_USER_AGENT),
+                    null
+                )
 
-            playbackPreparer = MediaPlaybackPreparer(mediaSource, exoPlayer, dataSourceFactory, this)
+            playbackPreparer =
+                MediaPlaybackPreparer(mediaSource, exoPlayer, dataSourceFactory, this)
 
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(playbackPreparer)
@@ -175,24 +179,25 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         }
     }
 
-    override fun onLoadChildren(parentId: String, result: Result<List<MediaBrowserCompat.MediaItem>>) {
+    override fun onLoadChildren(parentId: String, result: Result<List<MediaItem>>) {
         println("MusicService onLoadChildren parentId=$parentId")
-        val resultReady = mediaSource.whenReady { isLoaded ->
-            if (isLoaded) {
-                val mediaItems = browserTree[parentId]?.map {
-                    MediaItem(it.description, it.flag)
+        // TODO why on removing whenReady and only keeping serviceScope.launch {} media is not playable
+        mediaSource.whenReady {
+            if (it) {
+                serviceScope.launch {
+                    val mediaItems = mediaSource.getMediaMetadataForParenId(parentId).map {
+                        MediaItem(it.description, it.flag)
+                    }
+                    println("onLoadedChildren - ${mediaItems?.size}")
+                    result.sendResult(mediaItems)
                 }
-                println("onLoadedChildren - ${mediaItems?.size}")
-                result.sendResult(mediaItems)
-            } else {
-                result.sendResult(null)
             }
+            return@whenReady
         }
 
-        if (!resultReady) {
-            println("onLoadedChildren - resultNotReady")
-            result.detach()
-        }
+
+        println("onLoadedChildren - resultNotReady")
+        result.detach()
     }
 
     /**

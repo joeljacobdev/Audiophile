@@ -7,7 +7,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.lifecycle.*
 import com.pcforgeek.audiophile.R
-import com.pcforgeek.audiophile.data.MediaItem
+import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.service.EMPTY_PLAYBACK_STATE
 import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
@@ -16,8 +16,8 @@ import javax.inject.Inject
 
 class FeedViewModel @Inject constructor(private val mediaSessionConnection: MediaSessionConnection) : ViewModel() {
 
-    private val _mediaList = MutableLiveData<List<MediaItem>>()
-    val mediaList: LiveData<List<MediaItem>>
+    private val _mediaList = MutableLiveData<List<SongItem>>()
+    val mediaList: LiveData<List<SongItem>>
         get() = _mediaList
 
     private var mediaId: String = Constants.ROOT_MEDIA_ID
@@ -59,7 +59,7 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
     private fun updateState(
         playbackState: PlaybackStateCompat,
         mediaMetadata: MediaMetadataCompat
-    ): List<MediaItem> {
+    ): List<SongItem> {
 
         val newResId = when (playbackState.isPlaying) {
             true -> R.drawable.ic_pause_circle_filled_black_24dp
@@ -75,15 +75,15 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
             val list = children.map { child ->
-                MediaItem(
+                SongItem(
                     id = child.mediaId ?: "empty",
                     title = child.description.title.toString(),
-                    displayTitle = child.description.subtitle.toString(),
+                    displayName = child.description.subtitle.toString(),
                     mediaUri = child.description.mediaUri ?: Uri.parse(""),
-                    duration = 66L,//TODO 6
-                    albumId = 0L,
-                    artistId = 0L,
-                    albumArtUri = child.description.iconUri
+                    duration = 66L,//TODO
+                    albumId = "",
+                    artistId = "",
+                    albumArtPath = child.description.iconUri?.path
                 )
             }
             println("FeedViewModel=$mediaId onLoadedChildren parentId=$parentId size=${list.size}")
@@ -92,11 +92,11 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
 
     }
 
-    fun mediaItemClicked(clickedItem: MediaItem) {
+    fun mediaItemClicked(clickedItem: SongItem) {
         playMedia(clickedItem, pauseAllowed = false)
     }
 
-    fun playMedia(mediaItem: MediaItem, pauseAllowed: Boolean = true) {
+    fun playMedia(mediaItem: SongItem, pauseAllowed: Boolean = true) {
         val nowPlaying = mediaSessionConnection.nowPlaying.value
         val transportControls = mediaSessionConnection.transportControls
 
