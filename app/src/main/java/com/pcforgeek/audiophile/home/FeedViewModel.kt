@@ -76,12 +76,13 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
         override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
             val list = children.map { child ->
                 SongItem(
-                    id = child.mediaId ?: "empty",
+                    id = child.description.mediaId ?: "empty",
                     title = child.description.title.toString(),
-                    displayName = child.description.subtitle.toString(),
+                    displayName = "",
                     mediaUri = child.description.mediaUri ?: Uri.parse(""),
-                    duration = 66L,//TODO
+                    duration = child.description.extras?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) ?: 0L,
                     albumId = "",
+                    artist = child.description.subtitle.toString(),
                     artistId = "",
                     albumArtPath = child.description.iconUri?.path
                 )

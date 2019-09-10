@@ -2,20 +2,25 @@ package com.pcforgeek.audiophile.home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.media.AudioManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v4.media.session.PlaybackStateCompat
-import android.view.View
+import android.support.v4.media.MediaMetadataCompat
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
-import androidx.media.session.MediaButtonReceiver
+import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.di.ViewModelFactory
-import com.pcforgeek.audiophile.util.*
+import com.pcforgeek.audiophile.service.NOTHING_PLAYING
+import com.pcforgeek.audiophile.util.PermissionUtils
+import com.pcforgeek.audiophile.util.id
+import com.pcforgeek.audiophile.util.makeGone
+import com.pcforgeek.audiophile.util.makeVisible
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.current_playing_container.*
 import javax.inject.Inject
@@ -54,6 +59,16 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
     }
 
+    override fun onResume() {
+        val metadata = viewModel.nowPlaying.value ?: NOTHING_PLAYING
+        // TODO How is it possible that metadata is not null but metadata.id is null??
+        if (metadata.id == null)
+            currentPlayingContainer.makeGone()
+        else
+            setupCurrentPlayingUI(metadata)
+        super.onResume()
+    }
+
     private fun setupViewpager() {
         progress.makeGone()
         tabs.makeVisible()
@@ -70,11 +85,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupObservers() {
-        viewModel.nowPlaying.observe(this, Observer {
-            if (it.id != "") {
-                currentPlayingContainer.makeVisible()
-                currentMediaTitle.text = it.title
-                currentMediaArtist.text = it.artist
+        viewModel.nowPlaying.observe(this, Observer { metadata ->
+            if (metadata.id != null) {
+                println("current play = ${metadata.id}")
+                setupCurrentPlayingUI(metadata)
             } else {
                 currentPlayingContainer.makeGone()
             }
@@ -93,7 +107,30 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    private fun setupCurrentPlayingUI(metadata: MediaMetadataCompat) {
+        currentPlayingContainer.makeVisible()
+        currentMediaTitle.text =
+            metadata.bundle.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "<unknown>"
+        currentMediaArtist.text =
+            metadata.bundle.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
+                ?: "<unknown>"
+        if (metadata.description.iconUri?.path != null) {
+            Glide.with(currentPlayingContainer.context)
+                .load(metadata.description.iconUri?.path)
+                .error(ColorDrawable(Color.DKGRAY))
+                .into(currentMediaThumbnail)
+        } else {
+            Glide.with(currentPlayingContainer.context)
+                .load(ColorDrawable(Color.DKGRAY))
+                .into(currentMediaThumbnail)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         if (requestCode == EXTERNAL_STORAGE_READ_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 setupViewpager()
