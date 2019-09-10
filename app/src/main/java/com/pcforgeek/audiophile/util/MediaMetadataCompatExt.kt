@@ -51,8 +51,8 @@ inline val MediaMetadataCompat.artUri: Uri?
     get() = getString(MediaMetadataCompat.METADATA_KEY_ART_URI).toUri()
 
 // artwork of song's album, full version
-inline val MediaMetadataCompat.albumArtUri: Uri
-    get() = getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI).toUri()
+inline val MediaMetadataCompat.albumArtUri: Uri?
+    get() = getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)?.toUri()
 
 inline val MediaMetadataCompat.artist: String?
     get() = getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
