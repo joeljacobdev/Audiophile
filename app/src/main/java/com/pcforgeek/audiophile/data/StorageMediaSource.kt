@@ -199,13 +199,12 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
 }
 
 fun MediaMetadataCompat.Builder.from(mediaItem: SongItem): MediaMetadataCompat.Builder {
-    val durationInMs = TimeUnit.SECONDS.toMillis(mediaItem.duration)
     id = mediaItem.id
     albumId = mediaItem.albumId.toLong()
     artistId = mediaItem.artistId.toLong()
     title = mediaItem.title
     displayTitle = mediaItem.displayName
-    duration = durationInMs
+    duration = mediaItem.duration
     album = mediaItem.album
     artist = mediaItem.artist
     albumArtUri = mediaItem.albumArtPath

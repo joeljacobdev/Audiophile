@@ -29,7 +29,7 @@ import com.pcforgeek.audiophile.data.MusicSource
 import com.pcforgeek.audiophile.data.StorageMediaSource
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
-import com.pcforgeek.audiophile.util.flag
+import com.pcforgeek.audiophile.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -185,10 +185,20 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         mediaSource.whenReady {
             if (it) {
                 serviceScope.launch {
-                    val mediaItems = mediaSource.getMediaMetadataForParenId(parentId).map {
-                        MediaItem(it.description, it.flag)
+                    val mediaItems = mediaSource.getMediaMetadataForParenId(parentId).map { metadata ->
+                        val duration = metadata.duration
+                        val extras = Bundle()
+                        extras.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                        val description = MediaDescriptionCompat.Builder().setExtras(extras)
+                            .setIconUri(metadata.description.iconUri)
+                            .setMediaId(metadata.description.mediaId)
+                            .setMediaUri(metadata.description.mediaUri)
+                            .setTitle(metadata.title)
+                            .setSubtitle(metadata.artist)
+                            .build()
+                        MediaItem(description, metadata.flag)
                     }
-                    println("onLoadedChildren - ${mediaItems?.size}")
+                    println("onLoadedChildren - ${mediaItems.size}")
                     result.sendResult(mediaItems)
                 }
             }
