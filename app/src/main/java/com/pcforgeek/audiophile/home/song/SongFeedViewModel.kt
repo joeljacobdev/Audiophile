@@ -1,36 +1,46 @@
-package com.pcforgeek.audiophile.home
+package com.pcforgeek.audiophile.home.song
 
-import android.net.Uri
-import android.support.v4.media.MediaBrowserCompat
+import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import androidx.lifecycle.*
 import com.pcforgeek.audiophile.R
+import com.pcforgeek.audiophile.data.StorageMediaSource
 import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.service.EMPTY_PLAYBACK_STATE
 import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
 import com.pcforgeek.audiophile.util.*
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
-class FeedViewModel @Inject constructor(private val mediaSessionConnection: MediaSessionConnection) : ViewModel() {
+class SongFeedViewModel @Inject constructor(
+    private val mediaSessionConnection: MediaSessionConnection,
+    private val storage: StorageMediaSource
+) : ViewModel() {
 
     private val _mediaList = MutableLiveData<List<SongItem>>()
     val mediaList: LiveData<List<SongItem>>
         get() = _mediaList
 
-    private var mediaId: String = Constants.ROOT_MEDIA_ID
+    private var mediaId: String = Type.ROOT_MEDIA_ID
     fun setMediaId(value: String) {
         mediaId = value
+        getSongs(value)
+        Timber.i("SongFeedViewModel mediaId=${mediaId} set")
     }
 
+    private fun getSongs(id: String) {
+        viewModelScope.launch {
+            _mediaList.value = storage.getSongItemsForParentId(id)
+        }
+    }
 
     val rootMediaId: LiveData<String> =
         Transformations.map(mediaSessionConnection.isConnected) { isConnected ->
             if (isConnected) {
                 mediaSessionConnection.also {
-                    it.subscribe(mediaId, subscriptionCallback)
                     it.playbackState.observeForever(playbackStateObserver)
                     it.nowPlaying.observeForever(mediaMetadataObserver)
                 }
@@ -72,27 +82,6 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
         } ?: emptyList()
     }
 
-    private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
-        override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
-            val list = children.map { child ->
-                SongItem(
-                    id = child.description.mediaId ?: "empty",
-                    title = child.description.title.toString(),
-                    displayName = "",
-                    mediaUri = child.description.mediaUri ?: Uri.parse(""),
-                    duration = child.description.extras?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) ?: 0L,
-                    albumId = "",
-                    artist = child.description.subtitle.toString(),
-                    artistId = "",
-                    albumArtPath = child.description.iconUri?.path
-                )
-            }
-            println("FeedViewModel=$mediaId onLoadedChildren parentId=$parentId size=${list.size}")
-            _mediaList.postValue(list)
-        }
-
-    }
-
     fun mediaItemClicked(clickedItem: SongItem) {
         playMedia(clickedItem, pauseAllowed = false)
     }
@@ -110,15 +99,37 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
                         if (pauseAllowed) transportControls.pause() else Unit
                     playbackState.isPlayEnabled -> transportControls.play()
                     else -> {
-                        Log.w(
-                            TAG, "Playable item clicked but neither play nor pause are enabled!" +
-                                    " (mediaId=${mediaItem.id})"
+                        Timber.i(
+                            "Playable item clicked but neither play nor pause are enabled! (mediaId=${mediaItem.id})"
                         )
                     }
                 }
             }
         } else {
-            transportControls.playFromMediaId(mediaItem.id, null)
+            val extras = Bundle()
+            val type = findTypeFromMediaId()
+            extras.putString(Type.AUDIOPHILE_TYPE, type)
+            transportControls.playFromMediaId(mediaItem.id, extras)
+        }
+    }
+
+    private fun findTypeFromMediaId(): String {
+        return when (mediaId) {
+            Type.ALL_MEDIA_ID -> Type.ALL_MEDIA_ID
+            Type.ARTIST_MEDIA_ID -> Type.EMPTY
+            Type.ALBUM_MEDIA_ID -> Type.EMPTY
+            Type.PLAYLIST_MEDIA_ID -> Type.EMPTY
+            else -> {
+                val split = mediaId.split("/")
+                if (split.size < 2)
+                    return Type.EMPTY
+                when {
+                    split[0] == Type.ALBUM -> Type.ALBUM
+                    split[0] == Type.ARTIST -> Type.ARTIST
+                    split[0] == Type.PLAYLIST -> Type.PLAYLIST
+                    else -> Type.EMPTY
+                }
+            }
         }
     }
 
@@ -126,12 +137,9 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
         super.onCleared()
         mediaSessionConnection.playbackState.removeObserver(playbackStateObserver)
         mediaSessionConnection.nowPlaying.removeObserver(mediaMetadataObserver)
-
-        mediaSessionConnection.unsubscribe("/", subscriptionCallback)
     }
 
 
 }
 
 const val NO_RES = 0
-private const val TAG = "MainViewModel"

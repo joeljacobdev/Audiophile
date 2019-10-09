@@ -24,16 +24,17 @@ import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.MusicSource
-import com.pcforgeek.audiophile.data.StorageMediaSource
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
-import com.pcforgeek.audiophile.util.*
+import com.pcforgeek.audiophile.util.id
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlaylistListener {
@@ -53,17 +54,15 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
             setAudioAttributes(audiophyAttributes, true)
         }
     }
-    private val browserTree: BrowserTree by lazy {
-        BrowserTree(applicationContext, mediaSource)
-    }
-    private lateinit var mediaSource: MusicSource
+
+    @Inject
+    lateinit var mediaSource: MusicSource
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var audioManager: AudioManager
     private lateinit var playbackPreparer: MediaPlaybackPreparer
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaController: MediaControllerCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
-    private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var packageValidator: PackageValidator
 
     private lateinit var notificationBuilder: NotificationBuilder
@@ -78,6 +77,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
 
     override fun onCreate() {
         super.onCreate()
+        App.component.inject(this)
 //        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -113,7 +113,6 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         becomingNoisyReceiver =
             BecomingNoisyReceiver(context = this, sessionToken = mediaSession.sessionToken)
 
-        mediaSource = StorageMediaSource(applicationContext)
         serviceScope.launch {
             mediaSource.load()
         }
@@ -128,7 +127,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
                 )
 
             playbackPreparer =
-                MediaPlaybackPreparer(mediaSource, exoPlayer, dataSourceFactory, this)
+                MediaPlaybackPreparer(serviceScope, mediaSource, exoPlayer, dataSourceFactory, this)
 
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(playbackPreparer)
@@ -181,33 +180,33 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
 
     override fun onLoadChildren(parentId: String, result: Result<List<MediaItem>>) {
         println("MusicService onLoadChildren parentId=$parentId")
-        // TODO why on removing whenReady and only keeping serviceScope.launch {} media is not playable
-        mediaSource.whenReady {
-            if (it) {
-                serviceScope.launch {
-                    val mediaItems = mediaSource.getMediaMetadataForParenId(parentId).map { metadata ->
-                        val duration = metadata.duration
-                        val extras = Bundle()
-                        extras.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-                        val description = MediaDescriptionCompat.Builder().setExtras(extras)
-                            .setIconUri(metadata.description.iconUri)
-                            .setMediaId(metadata.description.mediaId)
-                            .setMediaUri(metadata.description.mediaUri)
-                            .setTitle(metadata.title)
-                            .setSubtitle(metadata.artist)
-                            .build()
-                        MediaItem(description, metadata.flag)
-                    }
-                    println("onLoadedChildren - ${mediaItems.size}")
-                    result.sendResult(mediaItems)
-                }
-            }
-            return@whenReady
-        }
+//        // TODO why on removing whenReady and only keeping serviceScope.launch {} media is not playable
+//        mediaSource.whenReady {
+//            if (it) {
+//                serviceScope.launch {
+//                    val mediaItems = mediaSource.getMediaMetadataForParenId(parentId).map { metadata ->
+//                        val duration = metadata.duration
+//                        val extras = Bundle()
+//                        extras.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+//                        val description = MediaDescriptionCompat.Builder().setExtras(extras)
+//                            .setIconUri(metadata.description.iconUri)
+//                            .setMediaId(metadata.description.mediaId)
+//                            .setMediaUri(metadata.description.mediaUri)
+//                            .setTitle(metadata.title)
+//                            .setSubtitle(metadata.artist)
+//                            .build()
+//                        MediaItem(description, metadata.flag)
+//                    }
+//                    Timber.d("onLoadedChildren - ${mediaItems.size}")
+//                    result.sendResult(mediaItems)
+//                }
+//            }
+//            return@whenReady
+//        }
+        result.sendResult(null)
 
-
-        println("onLoadedChildren - resultNotReady")
-        result.detach()
+//        println("onLoadedChildren - resultNotReady")
+//        result.detach()
     }
 
     /**
@@ -222,7 +221,9 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         val resultsSent = mediaSource.whenReady { successfullyInitialized ->
             if (successfullyInitialized) {
                 val resultsList = mediaSource.search(query, extras ?: Bundle.EMPTY)
-                    .map { mediaMetadata ->
+                    .map { song ->
+                        MediaMetadataCompat.Builder().from(song).build()
+                    }.map { mediaMetadata ->
                         MediaItem(mediaMetadata.description, MediaItem.FLAG_PLAYABLE)
                     }
                 result.sendResult(resultsList)
@@ -318,8 +319,59 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         }
 
         override fun onSkipToNext(player: Player?, controlDispatcher: ControlDispatcher?) {
-            val next = player?.nextWindowIndex ?: return
-            player.seekTo(next, 0L)
+            //val next = player?.nextWindowIndex ?: return
+            //player.seekTo(next, 0L)
+            val currentIndex = player?.currentWindowIndex
+            if (currentIndex != null && playlist[currentIndex].id != null) {
+                val current = playlist[currentIndex]
+                serviceScope.launch {
+                    mediaSource.incrementPlayCount(
+                        id = current.id!!,
+                        duration = player.contentDuration,
+                        current = player.currentPosition
+                    )
+                }
+            }
+            //println("skip next = id=${item.id} title=${item.title} duration=${player.contentDuration} current=${player.currentPosition}")
+            super.onSkipToNext(player, controlDispatcher)
+
+        }
+
+        override fun onSkipToPrevious(player: Player?, controlDispatcher: ControlDispatcher?) {
+//            val previous = player?.previousWindowIndex ?: return
+//            val item = playlist[previous]
+//            println("skip previous = id=${item.id} title=${item.title} duration=${player.contentDuration} current=${player.currentPosition}")
+            val currentIndex = player?.currentWindowIndex
+            if (currentIndex != null && playlist[currentIndex].id != null) {
+                val current = playlist[currentIndex]
+                serviceScope.launch {
+                    mediaSource.incrementPlayCount(
+                        id = current.id!!,
+                        duration = player.contentDuration,
+                        current = player.currentPosition
+                    )
+                }
+            }
+            super.onSkipToPrevious(player, controlDispatcher)
+        }
+
+        override fun onSkipToQueueItem(
+            player: Player?,
+            controlDispatcher: ControlDispatcher?,
+            id: Long
+        ) {
+            val currentIndex = player?.currentWindowIndex
+            if (currentIndex != null && playlist[currentIndex].id != null) {
+                val current = playlist[currentIndex]
+                serviceScope.launch {
+                    mediaSource.incrementPlayCount(
+                        id = current.id!!,
+                        duration = player.contentDuration,
+                        current = player.currentPosition
+                    )
+                }
+            }
+            super.onSkipToQueueItem(player, controlDispatcher, id)
         }
     }
 

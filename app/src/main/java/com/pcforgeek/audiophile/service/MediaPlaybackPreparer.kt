@@ -11,15 +11,19 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.pcforgeek.audiophile.data.MusicSource
-import com.pcforgeek.audiophile.util.album
-import com.pcforgeek.audiophile.util.id
-import com.pcforgeek.audiophile.util.toMediaSource
+import com.pcforgeek.audiophile.data.model.SongItem
+import com.pcforgeek.audiophile.util.*
+import com.pcforgeek.audiophile.util.Type.AUDIOPHILE_TYPE
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 /**
  * Connect the bridge between exoplayer and mediasession (MediaSessionCompat.Callback)
  */
 class MediaPlaybackPreparer(
+    private val scope: CoroutineScope,
     private val musicSource: MusicSource,
     private val exoPlayer: ExoPlayer,
     private val dataSourceFactory: DefaultDataSourceFactory,
@@ -28,8 +32,11 @@ class MediaPlaybackPreparer(
 
     override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
         musicSource.whenReady {
-            val metadataList = musicSource.search(query ?: "", extras ?: Bundle.EMPTY)
-            if (metadataList.isNotEmpty()) {
+            val songList = musicSource.search(query ?: "", extras ?: Bundle.EMPTY)
+            if (songList.isNotEmpty()) {
+                val metadataList = songList.map { song ->
+                    MediaMetadataCompat.Builder().from(song).build()
+                }
                 listener.onPlaylistCreated(metadataList)
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
                 exoPlayer.prepare(mediaSource)
@@ -46,28 +53,29 @@ class MediaPlaybackPreparer(
         cb: ResultReceiver?
     ): Boolean = false
 
-    override fun getSupportedPrepareActions(): Long = PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
-            PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-            PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH or
-            PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
+    override fun getSupportedPrepareActions(): Long =
+        PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
+                PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
+                PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH or
+                PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
 
     override fun onPrepareFromMediaId(mediaId: String?, extras: Bundle?) {
+        if (mediaId == null) return
         musicSource.whenReady {
-            val item: MediaMetadataCompat? = musicSource.find { item ->
-                item.id == mediaId
-            }
+            scope.launch {
+                val type = extras?.getString(AUDIOPHILE_TYPE) ?: return@launch
+                val metadataList = buildPlaylist(type, mediaId)
+                val songMetadata = metadataList.find { item ->
+                    item.id == mediaId
+                } ?: return@launch
 
-            if (item == null) {
-                //
-            } else {
-                val metadataList = buildPlaylist(item)
-                listener.onPlaylistCreated(metadataList)
+                Timber.i("onPlayFromMediaID=${mediaId} size=${metadataList.size}")
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
-
-                val indexOfItem = metadataList.indexOf(item)
+                val indexOfItem = metadataList.indexOf(songMetadata)
                 exoPlayer.prepare(mediaSource)
                 // what is the UI where this happen
                 exoPlayer.seekTo(indexOfItem, 0)
+                listener.onPlaylistCreated(metadataList)
             }
         }
     }
@@ -76,12 +84,29 @@ class MediaPlaybackPreparer(
 
     override fun onPrepare() = Unit
 
-
-    // create playlist by album
-    private fun buildPlaylist(item: MediaMetadataCompat): List<MediaMetadataCompat> =
-        musicSource.filter { item.album == it.album }
+    // create playlist by based on type
+    private suspend fun buildPlaylist(type: String, mediaId: String): List<MediaMetadataCompat> {
+        val songItems = musicSource.getSongItemsForType(type, mediaId)
+        return songItems.map { song ->
+            MediaMetadataCompat.Builder().from(song).build()
+        }
+    }
 
     interface OnPlaylistListener {
         fun onPlaylistCreated(list: List<MediaMetadataCompat>)
     }
+}
+
+fun MediaMetadataCompat.Builder.from(mediaItem: SongItem): MediaMetadataCompat.Builder {
+    id = mediaItem.id
+    albumId = mediaItem.albumId.toLong()
+    artistId = mediaItem.artistId.toLong()
+    title = mediaItem.title
+    displayTitle = mediaItem.displayName
+    duration = mediaItem.duration
+    album = mediaItem.album
+    artist = mediaItem.artist
+    albumArtUri = mediaItem.albumArtPath
+    mediaUri = mediaItem.mediaUri.path
+    return this
 }

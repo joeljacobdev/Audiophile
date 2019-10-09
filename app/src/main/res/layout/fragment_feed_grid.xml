@@ -6,7 +6,7 @@
     android:background="@color/dark_background"
     android:clickable="false"
     android:focusable="false"
-    tools:context=".home.FeedGridFragment">
+    tools:context=".home.category.CategoryFeedGridFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gridRecyclerView"

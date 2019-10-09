@@ -30,10 +30,10 @@ class MainViewModel @Inject constructor(private val mediaSessionConnection: Medi
 
     // Should I use SingleLiveEvent
     val nowPlaying: LiveData<MediaMetadataCompat> = Transformations.map(mediaSessionConnection.nowPlaying) { metadata ->
-        println("now playing isPlaying == ${metadata.id != ""}")
-        _isPlaying.value = metadata.id != ""
+        _isPlaying.value = metadata.id != NOTHING_PLAYING.id
         metadata
     }
+
     val currentPlaybackState: LiveData<PlaybackStateCompat> =
         Transformations.map(mediaSessionConnection.playbackState) { state ->
             if (state.isPlaying) {
@@ -47,11 +47,9 @@ class MainViewModel @Inject constructor(private val mediaSessionConnection: Medi
     fun playOrPause() {
         if (isPlaying.value == true) {
             _isPlaying.value = false
-            println("playOrPause == pause")
             mediaSessionConnection.transportControls.pause()
         } else if (isPlaying.value == false) {
             _isPlaying.value = true
-            println("playOrPause == play")
             mediaSessionConnection.transportControls.play()
         }
     }
