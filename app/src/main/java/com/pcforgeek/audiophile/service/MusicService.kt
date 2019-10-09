@@ -34,6 +34,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlaylistListener {
@@ -53,9 +54,6 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
             setAudioAttributes(audiophyAttributes, true)
         }
     }
-    private val browserTree: BrowserTree by lazy {
-        BrowserTree(applicationContext, mediaSource)
-    }
     private lateinit var mediaSource: MusicSource
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var audioManager: AudioManager
@@ -63,7 +61,6 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaController: MediaControllerCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
-    private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var packageValidator: PackageValidator
 
     private lateinit var notificationBuilder: NotificationBuilder
@@ -198,7 +195,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
                             .build()
                         MediaItem(description, metadata.flag)
                     }
-                    println("onLoadedChildren - ${mediaItems.size}")
+                    Timber.d("onLoadedChildren - ${mediaItems.size}")
                     result.sendResult(mediaItems)
                 }
             }
@@ -318,8 +315,47 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         }
 
         override fun onSkipToNext(player: Player?, controlDispatcher: ControlDispatcher?) {
-            val next = player?.nextWindowIndex ?: return
-            player.seekTo(next, 0L)
+            //val next = player?.nextWindowIndex ?: return
+            //player.seekTo(next, 0L)
+            val currentIndex = player?.currentWindowIndex
+            if (currentIndex != null && playlist[currentIndex].id != null){
+                val current = playlist[currentIndex]
+                serviceScope.launch {
+                    mediaSource.incrementPlayCount(id = current.id!!, duration = player.contentDuration, current = player.currentPosition )
+                }
+            }
+            //println("skip next = id=${item.id} title=${item.title} duration=${player.contentDuration} current=${player.currentPosition}")
+            super.onSkipToNext(player, controlDispatcher)
+
+        }
+
+        override fun onSkipToPrevious(player: Player?, controlDispatcher: ControlDispatcher?) {
+//            val previous = player?.previousWindowIndex ?: return
+//            val item = playlist[previous]
+//            println("skip previous = id=${item.id} title=${item.title} duration=${player.contentDuration} current=${player.currentPosition}")
+            val currentIndex = player?.currentWindowIndex
+            if (currentIndex != null && playlist[currentIndex].id != null){
+                val current = playlist[currentIndex]
+                serviceScope.launch {
+                    mediaSource.incrementPlayCount(id = current.id!!, duration = player.contentDuration, current = player.currentPosition )
+                }
+            }
+            super.onSkipToPrevious(player, controlDispatcher)
+        }
+
+        override fun onSkipToQueueItem(
+            player: Player?,
+            controlDispatcher: ControlDispatcher?,
+            id: Long
+        ) {
+            val currentIndex = player?.currentWindowIndex
+            if (currentIndex != null && playlist[currentIndex].id != null){
+                val current = playlist[currentIndex]
+                serviceScope.launch {
+                    mediaSource.incrementPlayCount(id = current.id!!, duration = player.contentDuration, current = player.currentPosition )
+                }
+            }
+            super.onSkipToQueueItem(player, controlDispatcher, id)
         }
     }
 

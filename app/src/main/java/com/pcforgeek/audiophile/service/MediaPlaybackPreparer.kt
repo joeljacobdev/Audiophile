@@ -11,9 +11,8 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.pcforgeek.audiophile.data.MusicSource
-import com.pcforgeek.audiophile.util.album
-import com.pcforgeek.audiophile.util.id
-import com.pcforgeek.audiophile.util.toMediaSource
+import com.pcforgeek.audiophile.util.*
+import timber.log.Timber
 
 
 /**
@@ -61,13 +60,13 @@ class MediaPlaybackPreparer(
                 //
             } else {
                 val metadataList = buildPlaylist(item)
-                listener.onPlaylistCreated(metadataList)
+                Timber.i("onPlayFromMediaID=${mediaId} size=${metadataList.size}")
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
-
                 val indexOfItem = metadataList.indexOf(item)
                 exoPlayer.prepare(mediaSource)
                 // what is the UI where this happen
                 exoPlayer.seekTo(indexOfItem, 0)
+                listener.onPlaylistCreated(metadataList)
             }
         }
     }

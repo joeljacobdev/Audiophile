@@ -14,6 +14,7 @@ interface MusicSource : Iterable<MediaMetadataCompat> {
 
     fun whenReady(prepare: (Boolean) -> Unit): Boolean
     fun search(term: String, extras: Bundle): List<MediaMetadataCompat>
+    suspend fun incrementPlayCount(id: String, duration: Long, current: Long)
     suspend fun getMediaMetadataForParenId(parentId: String): List<MediaMetadataCompat>
 }
 

@@ -6,14 +6,17 @@ import android.support.v4.media.MediaMetadataCompat
 import androidx.core.net.toUri
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.data.model.CategoryItem
+import com.pcforgeek.audiophile.data.model.Playlist
 import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.data.model.Type
 import com.pcforgeek.audiophile.db.CategoryDao
+import com.pcforgeek.audiophile.db.PlaylistDao
 import com.pcforgeek.audiophile.db.SongDao
 import com.pcforgeek.audiophile.util.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
@@ -28,6 +31,8 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
     lateinit var songDao: SongDao
     @Inject
     lateinit var categoryDao: CategoryDao
+    @Inject
+    lateinit var playlistDao: PlaylistDao
 
     init {
         App.component.inject(this)
@@ -64,7 +69,7 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
                     val cursor1 = context.contentResolver.query(
                         MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                         arrayOf(MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART),
-                        MediaStore.Audio.Albums._ID+ "=?",
+                        MediaStore.Audio.Albums._ID + "=?",
                         arrayOf(it.getLong(it.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)).toString()),
                         null
                     )
@@ -105,6 +110,12 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
                 cursor.close()
 
             }
+            GlobalScope.launch {
+                if (songsList.isNotEmpty()) {
+                    songsList.forEach { item ->
+                    }
+                }
+            }
             songDao.insertAllSongs(songsList)
             songsList
         }
@@ -124,6 +135,12 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
         }
     }
 
+    override suspend fun incrementPlayCount(id: String, duration: Long, current: Long) {
+        val percent = current / duration
+        if (percent > 0.8)
+            songDao.incrementPlayCount(id)
+    }
+
     override suspend fun getMediaMetadataForParenId(parentId: String): List<MediaMetadataCompat> {
         return when (parentId) {
             Constants.ALL_MEDIA_ID -> getAllSongs()
@@ -135,6 +152,7 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
                 when {
                     split[0] == "album" -> getSongsForAlbumId(split[1])
                     split[0] == "artist" -> getSongsForArtistId(split[1])
+                    split[0] == "playlist" -> getSongsForPlaylistId(split[1].toInt())
                     else -> emptyList()
                 }
             }
@@ -174,7 +192,6 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
     private suspend fun getSongsForAlbumId(albumId: String): List<MediaMetadataCompat> {
         return withContext(Dispatchers.IO) {
             val list = songDao.getSongsForAlbumId(albumId)
-            println("album songs id=$albumId size=${list.size}")
             list.map { song ->
                 MediaMetadataCompat.Builder()
                     .from(song)
@@ -186,7 +203,18 @@ class StorageMediaSource(private val context: Context) : AbstractMusicSource() {
     private suspend fun getSongsForArtistId(artistId: String): List<MediaMetadataCompat> {
         return withContext(Dispatchers.IO) {
             val list = songDao.getSongsForArtistId(artistId)
-            println("artist songs id=$artistId size=${list.size}")
+            list.map { song ->
+                MediaMetadataCompat.Builder()
+                    .from(song)
+                    .build()
+            }.toList()
+        }
+    }
+
+    private suspend fun getSongsForPlaylistId(playlistId: Int): List<MediaMetadataCompat> {
+        return withContext(Dispatchers.IO) {
+            //val list = playlistDao.getAllSongsWithPlaylistId(playlistId)
+            val list = songDao.getSongsForArtistId(playlistId.toString())
             list.map { song ->
                 MediaMetadataCompat.Builder()
                     .from(song)

@@ -16,13 +16,12 @@ import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.di.ViewModelFactory
+import com.pcforgeek.audiophile.home.song.SongFeedFragment
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
-import com.pcforgeek.audiophile.util.PermissionUtils
-import com.pcforgeek.audiophile.util.id
-import com.pcforgeek.audiophile.util.makeGone
-import com.pcforgeek.audiophile.util.makeVisible
+import com.pcforgeek.audiophile.util.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.current_playing_container.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
@@ -61,8 +60,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         val metadata = viewModel.nowPlaying.value ?: NOTHING_PLAYING
-        // TODO How is it possible that metadata is not null but metadata.id is null??
-        if (metadata.id == null)
+        if (metadata.id == NOTHING_PLAYING.id)
             currentPlayingContainer.makeGone()
         else
             setupCurrentPlayingUI(metadata)
@@ -86,13 +84,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         viewModel.nowPlaying.observe(this, Observer { metadata ->
-            if (metadata.id != null) {
-                println("current play = ${metadata.id}")
+            Timber.i(
+                "nowPlaying = ${metadata.id} ${metadata.artist} ${metadata.album} ${metadata.title}"
+            )
+            if (metadata.id != NOTHING_PLAYING.id) {
                 setupCurrentPlayingUI(metadata)
-            } else {
+            } else if (viewModel.isPlaying.value == false) {
                 currentPlayingContainer.makeGone()
             }
         })
+
+        viewModel.currentPlaybackState.observe(this, Observer {  })
 
         viewModel.isPlaying.observe(this, Observer {
             if (it && currentPlayingContainer.isVisible) {
@@ -100,10 +102,6 @@ class MainActivity : AppCompatActivity() {
             } else if (!it && currentPlayingContainer.isVisible) {
                 playPauseButton.setImageResource(R.drawable.ic_play_circle_filled_black_24dp)
             }
-        })
-
-        viewModel.currentPlaybackState.observe(this, Observer {
-            // even thought we don;t do anything here, need to observe, otherwise Transformations code does not run
         })
     }
 
@@ -121,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                 .into(currentMediaThumbnail)
         } else {
             Glide.with(currentPlayingContainer.context)
-                .load(ColorDrawable(Color.DKGRAY))
+                .load(R.drawable.default_artwork)
                 .into(currentMediaThumbnail)
         }
     }
@@ -144,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         val fragment = viewpager.adapter?.instantiateItem(viewpager, viewpager.currentItem)
         if (fragment is GridFeedRootFragment) {
             val frag = fragment.childFragmentManager.findFragmentById(R.id.gridFeedRootContainer)
-            if (frag is FeedFragment)
+            if (frag is SongFeedFragment)
                 fragment.childFragmentManager.popBackStackImmediate()
             else
                 super.onBackPressed()

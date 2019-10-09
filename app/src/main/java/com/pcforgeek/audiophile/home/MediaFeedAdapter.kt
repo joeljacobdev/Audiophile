@@ -58,7 +58,7 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
             if (mediaItem.albumArtPath != null){
                 Glide.with(itemView.context).load(mediaItem.albumArtPath).error(ColorDrawable(Color.DKGRAY)).into(thumbnail)
             } else {
-                Glide.with(itemView.context).load(ColorDrawable(Color.DKGRAY)).into(thumbnail)
+                Glide.with(itemView.context).load(R.drawable.default_artwork).into(thumbnail)
             }
             itemView.setOnClickListener { listener.mediaItemClicked(mediaItem) }
         }

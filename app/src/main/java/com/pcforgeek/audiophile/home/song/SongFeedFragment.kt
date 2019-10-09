@@ -1,26 +1,27 @@
-package com.pcforgeek.audiophile.home
+package com.pcforgeek.audiophile.home.song
 
 
 import android.Manifest
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pcforgeek.audiophile.App
-
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.di.ViewModelFactory
+import com.pcforgeek.audiophile.home.MainActivity
+import com.pcforgeek.audiophile.home.MediaFeedAdapter
 import com.pcforgeek.audiophile.util.PermissionUtils
 import kotlinx.android.synthetic.main.fragment_feed.*
 import javax.inject.Inject
 
-class FeedFragment : Fragment(), MediaFeedAdapter.OnClick {
+class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
 
     private lateinit var mediaId: String
     private lateinit var mediaFeedAdapter: MediaFeedAdapter
@@ -41,8 +42,8 @@ class FeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     }
 
     companion object {
-        fun newInstance(mediaId: String): FeedFragment {
-            return FeedFragment().apply {
+        fun newInstance(mediaId: String): SongFeedFragment {
+            return SongFeedFragment().apply {
                 setMediaId(mediaId)
             }
         }
@@ -72,7 +73,6 @@ class FeedFragment : Fragment(), MediaFeedAdapter.OnClick {
             }
         })
         viewModel.rootMediaId.observe(this, Observer { rootId ->
-            println("rootId - $rootId")
         })
     }
 

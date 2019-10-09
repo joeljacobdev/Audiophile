@@ -12,6 +12,8 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.media.MediaBrowserServiceCompat
+import com.pcforgeek.audiophile.util.*
+import timber.log.Timber
 
 class MediaSessionConnection(context: Context, serviceComponent: ComponentName) {
     val isConnected = MutableLiveData<Boolean>()
@@ -36,10 +38,12 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
     private lateinit var mediaController: MediaControllerCompat
 
     fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+        Timber.i("Subscribe mediaId=$parentId to MediaBrowser")
         mediaBrowser.subscribe(parentId, callback)
     }
 
     fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+        Timber.i("Unsubscribe mediaId=$parentId to MediaBrowser")
         mediaBrowser.unsubscribe(parentId, callback)
     }
 
@@ -98,11 +102,17 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            nowPlaying.postValue(metadata ?: NOTHING_PLAYING)
+            if (metadata?.id != null) {
+                println("onMetadataChanged(): id=${metadata.id} title=${metadata.title} artist=${metadata.artist}  album=${metadata.album} albumArt=${metadata.albumArtUri?.path}")
+                nowPlaying.postValue(metadata)
+            } else {
+                println("onMetadataChanged(): NothingPlaying")
+                nowPlaying.postValue(NOTHING_PLAYING)
+            }
         }
 
         override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {
-            super.onQueueChanged(queue)
+            //super.onQueueChanged(queue)
         }
 
         override fun onSessionEvent(event: String?, extras: Bundle?) {

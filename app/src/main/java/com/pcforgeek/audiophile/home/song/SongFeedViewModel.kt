@@ -1,10 +1,9 @@
-package com.pcforgeek.audiophile.home
+package com.pcforgeek.audiophile.home.song
 
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import androidx.lifecycle.*
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.model.SongItem
@@ -12,6 +11,7 @@ import com.pcforgeek.audiophile.service.EMPTY_PLAYBACK_STATE
 import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
 import com.pcforgeek.audiophile.util.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class FeedViewModel @Inject constructor(private val mediaSessionConnection: MediaSessionConnection) : ViewModel() {
@@ -23,6 +23,7 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
     private var mediaId: String = Constants.ROOT_MEDIA_ID
     fun setMediaId(value: String) {
         mediaId = value
+        Timber.i("FeedViewModel mediaId=${mediaId} set")
     }
 
 
@@ -74,6 +75,8 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
+            println("onChildrenLoaded ${children.size}")
+            println("${children[0].description.title} ${children[0].description.mediaId ?: "empty"}")
             val list = children.map { child ->
                 SongItem(
                     id = child.description.mediaId ?: "empty",
@@ -87,10 +90,8 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
                     albumArtPath = child.description.iconUri?.path
                 )
             }
-            println("FeedViewModel=$mediaId onLoadedChildren parentId=$parentId size=${list.size}")
             _mediaList.postValue(list)
         }
-
     }
 
     fun mediaItemClicked(clickedItem: SongItem) {
@@ -110,9 +111,8 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
                         if (pauseAllowed) transportControls.pause() else Unit
                     playbackState.isPlayEnabled -> transportControls.play()
                     else -> {
-                        Log.w(
-                            TAG, "Playable item clicked but neither play nor pause are enabled!" +
-                                    " (mediaId=${mediaItem.id})"
+                        Timber.i(
+                            "Playable item clicked but neither play nor pause are enabled! (mediaId=${mediaItem.id})"
                         )
                     }
                 }
@@ -127,11 +127,10 @@ class FeedViewModel @Inject constructor(private val mediaSessionConnection: Medi
         mediaSessionConnection.playbackState.removeObserver(playbackStateObserver)
         mediaSessionConnection.nowPlaying.removeObserver(mediaMetadataObserver)
 
-        mediaSessionConnection.unsubscribe("/", subscriptionCallback)
+        mediaSessionConnection.unsubscribe(mediaId, subscriptionCallback)
     }
 
 
 }
 
 const val NO_RES = 0
-private const val TAG = "MainViewModel"

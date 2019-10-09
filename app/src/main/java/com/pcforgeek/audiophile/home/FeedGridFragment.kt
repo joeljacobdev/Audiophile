@@ -12,10 +12,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import com.pcforgeek.audiophile.App
-import com.pcforgeek.audiophile.BuildConfig
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.di.ViewModelFactory
+import com.pcforgeek.audiophile.home.song.FeedViewModel
+import com.pcforgeek.audiophile.home.song.SongFeedFragment
 import com.pcforgeek.audiophile.util.PermissionUtils
 import kotlinx.android.synthetic.main.fragment_feed_grid.*
 import javax.inject.Inject
@@ -72,7 +73,6 @@ class FeedGridFragment : Fragment(), MediaFeedAdapter.OnClick {
             }
         })
         viewModel.rootMediaId.observe(this, Observer { rootId ->
-            println("rootId - $rootId")
         })
     }
 
@@ -87,10 +87,8 @@ class FeedGridFragment : Fragment(), MediaFeedAdapter.OnClick {
 
     override fun mediaItemClicked(mediaItem: SongItem, browsable: Boolean) {
         if (browsable) {
-            if (BuildConfig.DEBUG)
-                println("Browsed to mediaItemID=${mediaItem.id} title=${mediaItem.title}")
             fragmentManager?.let {
-                it.beginTransaction().replace(R.id.gridFeedRootContainer, FeedFragment.newInstance(mediaItem.id)).addToBackStack(null)
+                it.beginTransaction().replace(R.id.gridFeedRootContainer, SongFeedFragment.newInstance(mediaItem.id)).addToBackStack(null)
                     .commit()
             }
         } else
