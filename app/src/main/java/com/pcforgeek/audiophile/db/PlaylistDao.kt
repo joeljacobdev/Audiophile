@@ -27,6 +27,6 @@ interface PlaylistDao {
     suspend fun getAllSongItemsWithPlaylistId(id: Int): List<SongItem>
 
     // for autocomplete text
-    @Query("SELECT title from Playlist where playlistId NOT IN (1, 2, 3) ")
-    suspend fun getAllPlaylistName(): List<String>
+    @Query("SELECT * from Playlist where playlistId NOT IN (1, 2, 3) ")
+    suspend fun getAllPlaylistForAutoComplete(): List<Category.Playlist>
 }

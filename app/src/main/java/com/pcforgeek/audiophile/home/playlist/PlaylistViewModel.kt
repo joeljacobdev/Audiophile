@@ -16,9 +16,12 @@ class PlaylistViewModel @Inject constructor(private val playlistDao: PlaylistDao
     val playlist: LiveData<List<Category.Playlist>>
         get() = _playlist
 
-    fun getAllPlaylist() {
+    fun getAllPlaylist(showDefaultPlaylist: Boolean = true) {
         viewModelScope.launch {
-            _playlist.value = playlistDao.getAllPlaylist()
+            if (!showDefaultPlaylist)
+                _playlist.value = playlistDao.getAllPlaylistForAutoComplete()
+            else
+                _playlist.value = playlistDao.getAllPlaylist()
         }
     }
 
@@ -26,6 +29,13 @@ class PlaylistViewModel @Inject constructor(private val playlistDao: PlaylistDao
         viewModelScope.launch {
             val playlistItem = PlaylistItem(playlistId, songId)
             playlistDao.insertPlaylistItem(playlistItem)
+        }
+    }
+
+    fun createPlaylist(name: String) {
+        viewModelScope.launch {
+            val playlist = Category.Playlist(name)
+            playlistDao.insertPlaylist(playlist)
         }
     }
 

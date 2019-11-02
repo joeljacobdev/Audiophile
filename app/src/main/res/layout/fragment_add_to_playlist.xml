@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_background"
+    android:clickable="true"
+    android:focusable="true"
     tools:context=".home.playlist.AddToPlaylistFragment">
 
     <AutoCompleteTextView
@@ -15,11 +17,13 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:background="@color/dark_primary_item"
+        android:hint="@string/search_for_playlist"
+        android:maxLines="1"
         android:padding="8dp"
         android:textColor="@color/dark_primary_font"
         android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/createPlaylistButton"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Search the playlist" />
 
@@ -27,21 +31,12 @@
         android:id="@+id/createPlaylistButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:background="@drawable/ic_add_24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
         android:layout_marginEnd="8dp"
-        app:layout_constraintTop_toTopOf="@id/playlistSearch"
+        android:background="@drawable/ic_add_24dp"
         app:layout_constraintBottom_toBottomOf="@id/playlistSearch"
-        app:layout_constraintStart_toEndOf="@id/playlistSearch"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/playlistRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/playlistSearch" />
+        app:layout_constraintStart_toEndOf="@id/playlistSearch"
+        app:layout_constraintTop_toTopOf="@id/playlistSearch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
