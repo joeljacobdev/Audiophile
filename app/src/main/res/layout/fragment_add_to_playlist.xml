@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_background"
+    android:clickable="true"
+    android:focusable="true"
+    tools:context=".home.playlist.AddToPlaylistFragment">
+
+    <AutoCompleteTextView
+        android:id="@+id/playlistSearch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/dark_primary_item"
+        android:hint="@string/search_for_playlist"
+        android:maxLines="1"
+        android:padding="8dp"
+        android:textColor="@color/dark_primary_font"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@id/createPlaylistButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Search the playlist" />
+
+    <ImageButton
+        android:id="@+id/createPlaylistButton"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/ic_add_24dp"
+        app:layout_constraintBottom_toBottomOf="@id/playlistSearch"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/playlistSearch"
+        app:layout_constraintTop_toTopOf="@id/playlistSearch" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

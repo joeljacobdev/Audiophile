@@ -3,19 +3,22 @@ package com.pcforgeek.audiophile.home
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import com.pcforgeek.audiophile.BuildConfig
-import com.pcforgeek.audiophile.util.Constants
+import com.pcforgeek.audiophile.home.playlist.PlaylistFragment
+import com.pcforgeek.audiophile.home.song.SongFeedFragment
+import com.pcforgeek.audiophile.util.Type
 
 class TabsAdapter(private val fragmentManager: FragmentManager) : FragmentStatePagerAdapter(fragmentManager) {
-    private val list = listOf(Constants.ALL_MEDIA_ID, Constants.ALBUM_MEDIA_ID, Constants.ARTIST_MEDIA_ID)
+    private val list = listOf(Type.ALL_MEDIA_ID, Type.ALBUM_MEDIA_ID, Type.ARTIST_MEDIA_ID, Type.PLAYLIST_MEDIA_ID)
     override fun getItem(position: Int): Fragment {
         return when (list[position]) {
-            Constants.ALL_MEDIA_ID ->
-                FeedFragment.newInstance(list[position])
-            Constants.ALBUM_MEDIA_ID ->
+            Type.ALL_MEDIA_ID ->
+                SongFeedFragment.newInstance(list[position])
+            Type.ALBUM_MEDIA_ID ->
                 GridFeedRootFragment.newInstance(list[position])
-            Constants.ARTIST_MEDIA_ID ->
+            Type.ARTIST_MEDIA_ID ->
                 GridFeedRootFragment.newInstance(list[position])
+            Type.PLAYLIST_MEDIA_ID ->
+                PlaylistFragment.newInstance()
             else -> Fragment()
         }
     }
@@ -26,10 +29,11 @@ class TabsAdapter(private val fragmentManager: FragmentManager) : FragmentStateP
 
     override fun getPageTitle(position: Int): CharSequence? {
         return when (list[position]) {
-            Constants.ALBUM_MEDIA_ID -> "Album"
-            Constants.ALL_MEDIA_ID -> "All"
-            Constants.FOLDER_MEDIA_ID -> "Folder"
-            Constants.ARTIST_MEDIA_ID -> "Artist"
+            Type.ALBUM_MEDIA_ID -> "Album"
+            Type.ALL_MEDIA_ID -> "All"
+            Type.FOLDER_MEDIA_ID -> "Folder"
+            Type.ARTIST_MEDIA_ID -> "Artist"
+            Type.PLAYLIST_MEDIA_ID -> "Playlist"
             else -> "None"
         }
     }

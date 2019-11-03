@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Audiophile</string>
 
     <!-- Notificaiton Channel -->
@@ -20,4 +20,11 @@
         <signature name=\"%1$s\" package=\"%2$s\">\n\t<key>%3$s</key>\n</signature>\n
         ]]>
     </string>
+    <string name="title_activity_permission" tools:ignore="ExtraTranslation">PermissionActivity</string>
+    <string name="overflow_icon_unicode">⋮</string>
+    <string name="delete">Delete</string>
+    <string name="add_to_playlist">Add to Playlist</string>
+    <string name="search_for_playlist">Search for playlist</string>
+    <string name="enter_the_playlist_name">Enter the playlist name</string>
+    <string name="create_playlist">Create Playlist</string>
 </resources>

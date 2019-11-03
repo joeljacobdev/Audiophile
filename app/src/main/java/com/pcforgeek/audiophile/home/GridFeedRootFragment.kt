@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import com.pcforgeek.audiophile.R
+import com.pcforgeek.audiophile.home.category.CategoryFeedGridFragment
 
 class GridFeedRootFragment : Fragment() {
 
@@ -35,7 +36,7 @@ class GridFeedRootFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        childFragmentManager.beginTransaction().replace(R.id.gridFeedRootContainer, FeedGridFragment.newInstance(mediaId))
+        childFragmentManager.beginTransaction().replace(R.id.gridFeedRootContainer, CategoryFeedGridFragment.newInstance(mediaId))
             .commit()
     }
 

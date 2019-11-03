@@ -4,20 +4,20 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.pcforgeek.audiophile.data.model.CategoryItem
+import com.pcforgeek.audiophile.data.model.Category
 
 @Dao
 interface CategoryDao {
 
-    @Query("SELECT * FROM CategoryItem")
-    suspend fun getAllCategoryItem(): List<CategoryItem>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAlbum(album: Category.Album)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCategory(categoryItem: CategoryItem)
+    suspend fun insertArtist(artist: Category.Artist)
 
-    @Query("SELECT * FROM CategoryItem WHERE type = 1")
-    suspend fun getAllAlbums(): List<CategoryItem>
+    @Query("SELECT * FROM Album")
+    suspend fun getAllAlbums(): List<Category.Album>
 
-    @Query("SELECT * FROM CategoryItem WHERE type = 2")
-    suspend fun getAllArtists(): List<CategoryItem>
+    @Query("SELECT * FROM Artist")
+    suspend fun getAllArtists(): List<Category.Artist>
 }

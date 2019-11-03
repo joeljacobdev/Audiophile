@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.R
@@ -17,17 +18,15 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
 
     private var viewTypeGrid: Boolean = false
 
-    fun isViewTypeGrid(viewTypeGrid: Boolean) {
-        this.viewTypeGrid = viewTypeGrid
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewTypeGrid) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.grid_item_view, parent, false)
-            return GridItemHolder(view)
+        return if (viewTypeGrid) {
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.grid_item_view, parent, false)
+            GridItemHolder(view)
         } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.media_feed_item_view, parent, false)
-            return MediaFeedItemHolder(view)
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.media_feed_item_view, parent, false)
+            MediaFeedItemHolder(view)
         }
     }
 
@@ -52,15 +51,39 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
         private val name = itemView.name
         private val artist = itemView.artist
         private val thumbnail = itemView.thumbnail
-        fun bind(mediaItem: SongItem) {
-            name.text = mediaItem.title
-            artist.text = mediaItem.artist
-            if (mediaItem.albumArtPath != null){
-                Glide.with(itemView.context).load(mediaItem.albumArtPath).error(ColorDrawable(Color.DKGRAY)).into(thumbnail)
+        private val overflowOptions = itemView.overflowOption
+        fun bind(songItem: SongItem) {
+            name.text = songItem.title
+            artist.text = songItem.artist
+            if (songItem.albumArtPath != null) {
+                Glide.with(itemView.context).load(songItem.albumArtPath)
+                    .error(ColorDrawable(Color.DKGRAY)).into(thumbnail)
             } else {
-                Glide.with(itemView.context).load(ColorDrawable(Color.DKGRAY)).into(thumbnail)
+                Glide.with(itemView.context).load(R.drawable.default_artwork).into(thumbnail)
             }
-            itemView.setOnClickListener { listener.mediaItemClicked(mediaItem) }
+            overflowOptions.setOnClickListener {
+                val popupMenu = PopupMenu(it.context, overflowOptions)
+                popupMenu.inflate(R.menu.overflow_options)
+                popupMenu.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.delete_menu -> {
+                            delete(songItem)
+                            true
+                        }
+                        R.id.add_to_playlist -> {
+                            listener.addSongToPlaylist(songItem.id)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popupMenu.show()
+            }
+            itemView.setOnClickListener { listener.mediaItemClicked(songItem) }
+        }
+
+        private fun delete(songItem: SongItem) {
+            
         }
     }
 
@@ -74,6 +97,7 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
 
     interface OnClick {
         fun mediaItemClicked(mediaItem: SongItem, browsable: Boolean = false)
+        fun addSongToPlaylist(songId: String)
     }
 }
 

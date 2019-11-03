@@ -6,15 +6,20 @@ import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import androidx.annotation.IntDef
+import com.pcforgeek.audiophile.data.model.Category
+import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.util.*
 
-interface MusicSource : Iterable<MediaMetadataCompat> {
+interface MusicSource : Iterable<SongItem> {
 
     suspend fun load()
 
     fun whenReady(prepare: (Boolean) -> Unit): Boolean
-    fun search(term: String, extras: Bundle): List<MediaMetadataCompat>
-    suspend fun getMediaMetadataForParenId(parentId: String): List<MediaMetadataCompat>
+    fun search(term: String, extras: Bundle): List<SongItem>
+    suspend fun incrementPlayCount(id: String, duration: Long, current: Long)
+    suspend fun getCategoryForParenId(parentId: String): List<Category>
+    suspend fun getSongItemsForType(type: String, id: String): List<SongItem>
+    suspend fun getSongItemsForParentId(parentId: String): List<SongItem>
 }
 
 
@@ -77,7 +82,7 @@ abstract class AbstractMusicSource : MusicSource {
         }
 
 
-    override fun search(term: String, extras: Bundle): List<MediaMetadataCompat> {
+    override fun search(term: String, extras: Bundle): List<SongItem> {
         // First attempt to search with the "focus" that's provided in the extras.
         val focusSearchResult = when (extras[MediaStore.EXTRA_MEDIA_FOCUS]) {
             MediaStore.Audio.Genres.ENTRY_CONTENT_TYPE -> {
