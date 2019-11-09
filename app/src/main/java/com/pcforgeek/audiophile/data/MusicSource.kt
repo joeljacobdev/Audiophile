@@ -20,6 +20,7 @@ interface MusicSource : Iterable<SongItem> {
     suspend fun getCategoryForParenId(parentId: String): List<Category>
     suspend fun getSongItemsForType(type: String, id: String): List<SongItem>
     suspend fun getSongItemsForParentId(parentId: String): List<SongItem>
+    suspend fun onBlacklistUpdated()
 }
 
 

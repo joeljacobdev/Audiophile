@@ -21,7 +21,7 @@ class DbModule {
     fun provideAppDatabase(app: Application): AppDatabase {
         lateinit var database: AppDatabase
         database = Room.databaseBuilder(app, AppDatabase::class.java, AppDatabase.DB_NAME)
-            .addCallback(object: RoomDatabase.Callback() {
+            .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     val favouritesPlaylist = Category.Playlist("Favourites")
                     favouritesPlaylist.id = Type.FAVOURITES_PLAYLIST
@@ -55,5 +55,10 @@ class DbModule {
     @Provides
     @Singleton
     fun getPlaylistDao(appDatabase: AppDatabase): PlaylistDao = appDatabase.playlistDao()
+
+    @Provides
+    @Singleton
+    fun getBlacklistPathDao(appDatabase: AppDatabase): BlacklistPathDao =
+        appDatabase.blacklistPathDao()
 
 }

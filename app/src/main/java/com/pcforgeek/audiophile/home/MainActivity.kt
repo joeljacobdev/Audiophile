@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
+import android.widget.PopupMenu
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -13,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.di.ViewModelFactory
+import com.pcforgeek.audiophile.home.option.SettingFragment
 import com.pcforgeek.audiophile.home.playlist.AddToPlaylistFragment
 import com.pcforgeek.audiophile.home.song.SongFeedFragment
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
@@ -63,6 +65,21 @@ class MainActivity : AppCompatActivity() {
         playPauseButton.setOnClickListener {
             viewModel.playOrPause()
         }
+
+        overflowMenu.setOnClickListener {
+            val popupMenu = PopupMenu(it.context, overflowMenu)
+            popupMenu.inflate(R.menu.main_menu)
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.setting -> {
+                        showSetting()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popupMenu.show()
+        }
     }
 
     private fun setupObservers() {
@@ -88,8 +105,16 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun showSetting() {
+        tabs.makeGone()
+        mainFragmentContainer.makeVisible()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.mainFragmentContainer, SettingFragment.newInstance())
+            .addToBackStack(null)
+            .commit()
+    }
+
     fun openAddToPlaylistFragment(songId: String) {
-        println("MainActivity - open AddToPlaylistFragment")
         tabs.makeGone()
         mainFragmentContainer.makeVisible()
         supportFragmentManager.beginTransaction()
@@ -122,6 +147,12 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.popBackStackImmediate()
             mainFragmentContainer.makeGone()
             tabs.makeVisible()
+        } else if (supportFragmentManager.findFragmentById(R.id.mainFragmentContainer) is SettingFragment) {
+            val fragment = supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)
+            if ((fragment as SettingFragment).isBlacklistUpdated) viewModel.onBlacklistUpdated()
+            supportFragmentManager.popBackStackImmediate()
+            tabs.makeVisible()
+            mainFragmentContainer.makeGone()
         } else if (tabs.isVisible) {
             val fragment = viewpager.adapter?.instantiateItem(viewpager, viewpager.currentItem)
             if (fragment is GridFeedRootFragment) {

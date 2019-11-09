@@ -6,6 +6,7 @@ import com.pcforgeek.audiophile.home.song.SongFeedFragment
 import com.pcforgeek.audiophile.home.category.CategoryFeedGridFragment
 import com.pcforgeek.audiophile.home.playlist.PlaylistFragment
 import com.pcforgeek.audiophile.home.MainActivity
+import com.pcforgeek.audiophile.home.option.SettingFragment
 import com.pcforgeek.audiophile.home.playlist.AddToPlaylistFragment
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
 import com.pcforgeek.audiophile.service.MusicService
@@ -23,5 +24,6 @@ interface ApplicationComponent {
     fun inject(feedListFragment: PlaylistFragment)
     fun inject(musicService: MusicService)
     fun inject(addToPlaylistFragment: AddToPlaylistFragment)
+    fun inject(settingFragment: SettingFragment)
     fun inject(storageMediaSource: StorageMediaSource)
 }

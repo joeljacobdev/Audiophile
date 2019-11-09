@@ -24,6 +24,12 @@ interface SongDao {
     @Delete
     suspend fun deleteSongs(songs: List<SongItem>)
 
+    @Query("DELETE from SongItem where songId NOT IN (:filterValues)")
+    suspend fun deleteRedundantItems(filterValues: List<String>)
+
+    @Query("SELECT count(*) from SongItem where songId NOT IN (:filterValues)")
+    suspend fun deleteRedundantItemsCount(filterValues: List<String>): Int
+
     @Query("SELECT * FROM SongItem WHERE albumId = :id ")
     suspend fun getSongsForAlbumId(id: String): List<SongItem>
 
