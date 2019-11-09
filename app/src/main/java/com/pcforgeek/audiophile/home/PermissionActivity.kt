@@ -28,6 +28,7 @@ class PermissionActivity : AppCompatActivity() {
             )
         } else {
             val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
     }
@@ -40,6 +41,7 @@ class PermissionActivity : AppCompatActivity() {
         if (requestCode == EXTERNAL_STORAGE_READ_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
             } else
                 finish()

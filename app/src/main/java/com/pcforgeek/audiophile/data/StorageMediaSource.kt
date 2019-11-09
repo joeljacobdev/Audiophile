@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.data.model.SongItem
+import com.pcforgeek.audiophile.db.BlacklistPathDao
 import com.pcforgeek.audiophile.db.CategoryDao
 import com.pcforgeek.audiophile.db.PlaylistDao
 import com.pcforgeek.audiophile.db.SongDao
@@ -22,13 +23,16 @@ class StorageMediaSource @Inject constructor(
     private val context: Context,
     private val songDao: SongDao,
     private val categoryDao: CategoryDao,
-    private val playlistDao: PlaylistDao
+    private val playlistDao: PlaylistDao,
+    private val blacklistPathDao: BlacklistPathDao
 ) : AbstractMusicSource() {
 
     private var songList: List<SongItem> = emptyList()
     private var albumList: List<Category.Album> = emptyList()
     private var artistList: List<Category.Artist> = emptyList()
-    private val selection = MediaStore.Audio.Media.IS_MUSIC + " != 0"
+    private var isLoading = false
+    private var selection: String? = null
+    private lateinit var selectionArg: Array<String>
 
     init {
         App.component.inject(this)
@@ -52,11 +56,12 @@ class StorageMediaSource @Inject constructor(
     private suspend fun getAllAudioFiles(): List<SongItem> {
         return withContext(Dispatchers.IO) {
             val songsList = mutableListOf<SongItem>()
+            selection = createSelectionCondition()
             val cursor = context.contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 selection,
-                null,
+                selectionArg,
                 null
             )
             cursor?.let {
@@ -115,7 +120,25 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
+    private suspend fun createSelectionCondition(): String? {
+        val paths = blacklistPathDao.getAllBlacklistPath()
+        var i = 0
+        var selection: String? = ""
+        while (i < paths.size) {
+            selection = if (i == paths.size - 1)
+                selection + MediaStore.Audio.Media.DATA + " not like ? "
+            else
+                selection + MediaStore.Audio.Media.DATA + " not like ? " + " and "
+            i++
+        }
+        if (selection?.isEmpty() == true || selection?.isBlank() == true) selection = null
+        selectionArg = paths.map { "%${it.path}%" }.toTypedArray()
+        return selection
+    }
+
     override suspend fun load() {
+        if (isLoading) return
+        isLoading = true
         val list = getAllAudioFiles()
         songList = list
         state = if (list.isNotEmpty()) {
@@ -123,6 +146,7 @@ class StorageMediaSource @Inject constructor(
         } else {
             STATE_ERROR
         }
+        isLoading = false
     }
 
     override suspend fun incrementPlayCount(id: String, duration: Long, current: Long) {
@@ -166,6 +190,17 @@ class StorageMediaSource @Inject constructor(
             Type.PLAYLIST -> getSongItemsForPlaylistId(id.toInt()) // TODO use String
             else -> emptyList()
         }
+    }
+
+    override suspend fun onBlacklistUpdated() {
+        if (isLoading) return
+        isLoading = true
+        selection = createSelectionCondition()
+        val list = getAllAudioFiles()
+        val ids = list.map { it.id }
+        songDao.deleteRedundantItems(ids)
+        songDao.insertAllSongs(list)
+        isLoading = false
     }
 
 

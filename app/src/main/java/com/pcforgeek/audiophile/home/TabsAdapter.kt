@@ -7,8 +7,15 @@ import com.pcforgeek.audiophile.home.playlist.PlaylistFragment
 import com.pcforgeek.audiophile.home.song.SongFeedFragment
 import com.pcforgeek.audiophile.util.Type
 
-class TabsAdapter(private val fragmentManager: FragmentManager) : FragmentStatePagerAdapter(fragmentManager) {
-    private val list = listOf(Type.ALL_MEDIA_ID, Type.ALBUM_MEDIA_ID, Type.ARTIST_MEDIA_ID, Type.PLAYLIST_MEDIA_ID)
+class TabsAdapter(private val fragmentManager: FragmentManager) :
+    FragmentStatePagerAdapter(fragmentManager) {
+    private val list = listOf(
+        Type.ALL_MEDIA_ID,
+        Type.ALBUM_MEDIA_ID,
+        Type.ARTIST_MEDIA_ID,
+        Type.PLAYLIST_MEDIA_ID
+    )
+
     override fun getItem(position: Int): Fragment {
         return when (list[position]) {
             Type.ALL_MEDIA_ID ->

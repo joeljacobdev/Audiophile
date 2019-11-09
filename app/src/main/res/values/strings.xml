@@ -27,4 +27,6 @@
     <string name="search_for_playlist">Search for playlist</string>
     <string name="enter_the_playlist_name">Enter the playlist name</string>
     <string name="create_playlist">Create Playlist</string>
+    <string name="setting">Setting</string>
+    <string name="add_a_path_to_blacklist">Add a path to blacklist</string>
 </resources>
