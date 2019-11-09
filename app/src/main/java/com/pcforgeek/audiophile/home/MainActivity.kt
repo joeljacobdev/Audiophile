@@ -131,6 +131,8 @@ class MainActivity : AppCompatActivity() {
                     fragment.childFragmentManager.popBackStackImmediate()
                 else
                     super.onBackPressed()
+            } else {
+                super.onBackPressed()
             }
         } else
             super.onBackPressed()
