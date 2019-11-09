@@ -1,6 +1,8 @@
 package com.pcforgeek.audiophile.util
 
+import android.content.Context
 import android.view.View
+import android.widget.Toast
 
 fun View.makeGone() {
     this.visibility = View.GONE
@@ -13,3 +15,6 @@ fun View.makeVisible() {
 fun View.makeInvisible() {
     this.visibility = View.INVISIBLE
 }
+
+fun Context.toast(message: String) =
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

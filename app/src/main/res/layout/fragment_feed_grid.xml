@@ -3,12 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/dark_background"
     android:clickable="false"
     android:focusable="false"
-    tools:context=".home.FeedGridFragment">
+    tools:context=".home.category.CategoryFeedGridFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gridRecyclerView"
         android:layout_width="match_parent"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         android:layout_height="match_parent" />
 </FrameLayout>

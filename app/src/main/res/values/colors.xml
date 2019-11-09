@@ -4,4 +4,12 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="white">#FFFFFF</color>
+
+    <!--dark theme-->
+    <color name="dark_background">#1E1E1E</color>
+    <color name="dark_item">#121212</color>
+    <color name="dark_primary_item">#241F1F</color>
+    <color name="dark_primary_font">#E1E1E1</color>
+    <color name="dark_secondary_font">#A2A2A2</color>
+    <color name="dark_indicator">#BB86FC</color>
 </resources>

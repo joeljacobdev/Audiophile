@@ -1,36 +1,32 @@
 package com.pcforgeek.audiophile.home
 
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.R
-import com.pcforgeek.audiophile.data.MediaItem
-import kotlinx.android.synthetic.main.media_item_collapsed.view.*
-import android.media.MediaMetadataRetriever
+import com.pcforgeek.audiophile.data.model.SongItem
 import kotlinx.android.synthetic.main.grid_item_view.view.*
+import kotlinx.android.synthetic.main.media_feed_item_view.view.*
 
-class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val listener: OnClick) :
+class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val listener: OnClick) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var mmr = MediaMetadataRetriever()
     private var viewTypeGrid: Boolean = false
 
-    fun isViewTypeGrid(viewTypeGrid: Boolean) {
-        this.viewTypeGrid = viewTypeGrid
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewTypeGrid) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.grid_item_view, parent, false)
-            return MediaTypeHolder(view)
+        return if (viewTypeGrid) {
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.grid_item_view, parent, false)
+            GridItemHolder(view)
         } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.media_item_collapsed, parent, false)
-            return MediaItemCollapsedHolder(view)
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.media_feed_item_view, parent, false)
+            MediaFeedItemHolder(view)
         }
     }
 
@@ -39,56 +35,69 @@ class MediaFeedAdapter(private val songList: MutableList<MediaItem>, private val
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is MediaItemCollapsedHolder)
+        if (holder is MediaFeedItemHolder)
             holder.bind(songList[position])
-        else if (holder is MediaTypeHolder)
+        else if (holder is GridItemHolder)
             holder.bind(songList[position])
     }
 
-    fun addData(data: List<MediaItem>) {
+    fun addData(data: List<SongItem>) {
         songList.clear()
         songList.addAll(data)
         notifyDataSetChanged()
     }
 
-    inner class MediaItemCollapsedHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val mediaName = itemView.mediaName
-        private val mediaArtist = itemView.mediaArtist
-        private val mediaArt = itemView.mediaArtThumbnail
-        fun bind(mediaItem: MediaItem) {
-            mediaName.text = mediaItem.title
-            mediaArtist.text = mediaItem.artist
-            if (mediaItem.albumArtUri == null)
-                mediaArt.background = ColorDrawable(Color.DKGRAY)
-            else {
-                try {
-                    mmr.setDataSource(mediaItem.mediaUri.path)
-                    val data = mmr.embeddedPicture
-                    if (data == null) {
-                        mediaArt.background = ColorDrawable(Color.DKGRAY)
-                    } else {
-                        val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
-                        Glide.with(itemView.context).load(bitmap).thumbnail(0.1f).into(mediaArt)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+    inner class MediaFeedItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val name = itemView.name
+        private val artist = itemView.artist
+        private val thumbnail = itemView.thumbnail
+        private val overflowOptions = itemView.overflowOption
+        fun bind(songItem: SongItem) {
+            name.text = songItem.title
+            artist.text = songItem.artist
+            if (songItem.albumArtPath != null) {
+                Glide.with(itemView.context).load(songItem.albumArtPath)
+                    .error(ColorDrawable(Color.DKGRAY)).into(thumbnail)
+            } else {
+                Glide.with(itemView.context).load(R.drawable.default_artwork).into(thumbnail)
             }
-            itemView.setOnClickListener { listener.mediaItemClicked(mediaItem) }
+            overflowOptions.setOnClickListener {
+                val popupMenu = PopupMenu(it.context, overflowOptions)
+                popupMenu.inflate(R.menu.overflow_options)
+                popupMenu.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.delete_menu -> {
+                            delete(songItem)
+                            true
+                        }
+                        R.id.add_to_playlist -> {
+                            listener.addSongToPlaylist(songItem.id)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popupMenu.show()
+            }
+            itemView.setOnClickListener { listener.mediaItemClicked(songItem) }
+        }
+
+        private fun delete(songItem: SongItem) {
+            
         }
     }
 
-    inner class MediaTypeHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class GridItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title = itemView.title
-        fun bind(mediaItem: MediaItem) {
-            itemView.background = ColorDrawable(Color.MAGENTA)
+        fun bind(mediaItem: SongItem) {
             title.text = mediaItem.title
             itemView.setOnClickListener { listener.mediaItemClicked(mediaItem, true) }
         }
     }
 
     interface OnClick {
-        fun mediaItemClicked(mediaItem: MediaItem, browsable: Boolean = false)
+        fun mediaItemClicked(mediaItem: SongItem, browsable: Boolean = false)
+        fun addSongToPlaylist(songId: String)
     }
 }
 
