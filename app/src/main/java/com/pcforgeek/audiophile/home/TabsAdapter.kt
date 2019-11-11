@@ -3,7 +3,6 @@ package com.pcforgeek.audiophile.home
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import com.pcforgeek.audiophile.home.playlist.PlaylistFragment
 import com.pcforgeek.audiophile.home.song.SongFeedFragment
 import com.pcforgeek.audiophile.util.Type
 
@@ -21,11 +20,11 @@ class TabsAdapter(private val fragmentManager: FragmentManager) :
             Type.ALL_MEDIA_ID ->
                 SongFeedFragment.newInstance(list[position])
             Type.ALBUM_MEDIA_ID ->
-                GridFeedRootFragment.newInstance(list[position])
+                ContainerRootFragment.newInstance(list[position])
             Type.ARTIST_MEDIA_ID ->
-                GridFeedRootFragment.newInstance(list[position])
+                ContainerRootFragment.newInstance(list[position])
             Type.PLAYLIST_MEDIA_ID ->
-                PlaylistFragment.newInstance()
+                ContainerRootFragment.newInstance(list[position])
             else -> Fragment()
         }
     }

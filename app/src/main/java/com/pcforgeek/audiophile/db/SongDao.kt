@@ -18,6 +18,9 @@ interface SongDao {
     @Query("UPDATE SongItem set playCount=(select playCount from SongItem where songId=:id)+1 where songId=:id")
     suspend fun incrementPlayCount(id: String)
 
+    @Query("UPDATE SongItem set favourite=1 where songId=:songId")
+    suspend fun  setSongToFavourite(songId: String)
+
     @Delete
     suspend fun deleteSong(song: SongItem)
 

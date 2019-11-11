@@ -22,6 +22,8 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
+import com.google.android.exoplayer2.source.TrackGroupArray
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.pcforgeek.audiophile.App
@@ -30,6 +32,7 @@ import com.pcforgeek.audiophile.data.MusicSource
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
 import com.pcforgeek.audiophile.util.id
+import com.pcforgeek.audiophile.util.title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -116,6 +119,65 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         serviceScope.launch {
             mediaSource.load()
         }
+
+        exoPlayer.addListener(object : Player.EventListener {
+            override fun onTracksChanged(
+                trackGroups: TrackGroupArray?,
+                trackSelections: TrackSelectionArray?
+            ) {
+                val currentIndex = exoPlayer.currentWindowIndex
+                if (playlist[currentIndex].id != null) {
+                    val current = playlist[currentIndex]
+                    serviceScope.launch {
+                        mediaSource.incrementPlayCount(
+                            id = current.id!!
+                        )
+                    }
+                }
+                super.onTracksChanged(trackGroups, trackSelections)
+            }
+
+            override fun onSeekProcessed() {
+                super.onSeekProcessed()
+            }
+
+            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                when (playbackState.toLong()) {
+
+                    PlaybackStateCompat.STATE_STOPPED.toLong() -> {
+                        println("PLAY COUNT - State Stopped")
+                    }
+                    PlaybackStateCompat.ACTION_STOP -> {
+                        println("PLAY COUNT - Stop")
+                    }
+                    PlaybackStateCompat.ACTION_FAST_FORWARD -> {
+                        println("PLAY COUNT - Fast Forward")
+                    }
+                    PlaybackStateCompat.ACTION_PLAY -> {
+                        println("PLAY COUNT - Play")
+                    }
+                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS -> {
+                        incrementCount()
+                        println("PLAY COUNT - Skip to previous")
+                    }
+                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT -> {
+                        incrementCount()
+                        println("PLAY COUNT - SKIP TO NEXT")
+                    }
+                    PlaybackStateCompat.ACTION_PAUSE -> {
+                        println("PLAY COUNT - Pause")
+                    }
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE -> {
+                        println("PLAY COUNT - Play Pause")
+                    }
+                    PlaybackStateCompat.ACTION_SEEK_TO -> {
+                        println("PLAY COUNT - Seek to")
+                    }
+                }
+                super.onPlayerStateChanged(playWhenReady, playbackState)
+            }
+
+        })
 
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
 
@@ -244,6 +306,20 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         stopForeground(true)
     }
 
+    private fun incrementCount() {
+        val currentIndex = exoPlayer.currentWindowIndex
+        if (playlist[currentIndex].id != null) {
+            val current = playlist[currentIndex]
+            serviceScope.launch {
+                mediaSource.incrementPlayCount(
+                    id = current.id!!,
+                    duration = exoPlayer.contentDuration,
+                    current = exoPlayer.currentPosition
+                )
+            }
+        }
+    }
+
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             mediaController.playbackState?.let { updateNotification(it) }
@@ -321,6 +397,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         override fun onSkipToNext(player: Player?, controlDispatcher: ControlDispatcher?) {
             //val next = player?.nextWindowIndex ?: return
             //player.seekTo(next, 0L)
+            println("PLAY COUNT - onSkipToNext()")
             val currentIndex = player?.currentWindowIndex
             if (currentIndex != null && playlist[currentIndex].id != null) {
                 val current = playlist[currentIndex]
@@ -341,6 +418,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
 //            val previous = player?.previousWindowIndex ?: return
 //            val item = playlist[previous]
 //            println("skip previous = id=${item.id} title=${item.title} duration=${player.contentDuration} current=${player.currentPosition}")
+            println("PLAY COUNT - onSkipToPrevious()")
             val currentIndex = player?.currentWindowIndex
             if (currentIndex != null && playlist[currentIndex].id != null) {
                 val current = playlist[currentIndex]
@@ -360,6 +438,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
             controlDispatcher: ControlDispatcher?,
             id: Long
         ) {
+            println("PLAY COUNT - onSkipToQueueItem()")
             val currentIndex = player?.currentWindowIndex
             if (currentIndex != null && playlist[currentIndex].id != null) {
                 val current = playlist[currentIndex]

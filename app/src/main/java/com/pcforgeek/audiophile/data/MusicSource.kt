@@ -17,6 +17,7 @@ interface MusicSource : Iterable<SongItem> {
     fun whenReady(prepare: (Boolean) -> Unit): Boolean
     fun search(term: String, extras: Bundle): List<SongItem>
     suspend fun incrementPlayCount(id: String, duration: Long, current: Long)
+    suspend fun incrementPlayCount(id: String)
     suspend fun getCategoryForParenId(parentId: String): List<Category>
     suspend fun getSongItemsForType(type: String, id: String): List<SongItem>
     suspend fun getSongItemsForParentId(parentId: String): List<SongItem>

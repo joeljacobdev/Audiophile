@@ -11,6 +11,7 @@ import com.pcforgeek.audiophile.service.EMPTY_PLAYBACK_STATE
 import com.pcforgeek.audiophile.service.MediaSessionConnection
 import com.pcforgeek.audiophile.service.NOTHING_PLAYING
 import com.pcforgeek.audiophile.util.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -86,7 +87,7 @@ class SongFeedViewModel @Inject constructor(
         playMedia(clickedItem, pauseAllowed = false)
     }
 
-    fun playMedia(mediaItem: SongItem, pauseAllowed: Boolean = true) {
+    private fun playMedia(mediaItem: SongItem, pauseAllowed: Boolean = true) {
         val nowPlaying = mediaSessionConnection.nowPlaying.value
         val transportControls = mediaSessionConnection.transportControls
 
@@ -130,6 +131,17 @@ class SongFeedViewModel @Inject constructor(
                     else -> Type.EMPTY
                 }
             }
+        }
+    }
+
+    fun setSongToFavourite(songId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            storage.setSongToFavourite(songId)
+        }
+    }
+
+    fun deleteSong(songItem: SongItem) {
+        viewModelScope.launch(Dispatchers.IO) {
         }
     }
 

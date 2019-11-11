@@ -12,8 +12,6 @@ import com.pcforgeek.audiophile.db.PlaylistDao
 import com.pcforgeek.audiophile.db.SongDao
 import com.pcforgeek.audiophile.util.Type
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -28,8 +26,6 @@ class StorageMediaSource @Inject constructor(
 ) : AbstractMusicSource() {
 
     private var songList: List<SongItem> = emptyList()
-    private var albumList: List<Category.Album> = emptyList()
-    private var artistList: List<Category.Artist> = emptyList()
     private var isLoading = false
     private var selection: String? = null
     private lateinit var selectionArg: Array<String>
@@ -109,12 +105,6 @@ class StorageMediaSource @Inject constructor(
                 cursor.close()
 
             }
-            GlobalScope.launch {
-                if (songsList.isNotEmpty()) {
-                    songsList.forEach { item ->
-                    }
-                }
-            }
             songDao.insertAllSongs(songsList)
             songsList
         }
@@ -152,7 +142,21 @@ class StorageMediaSource @Inject constructor(
     override suspend fun incrementPlayCount(id: String, duration: Long, current: Long) {
         val percent = current / duration
         if (percent > 0.8)
+            withContext(Dispatchers.IO) {
+                songDao.incrementPlayCount(id)
+            }
+    }
+
+    override suspend fun incrementPlayCount(id: String) {
+        withContext(Dispatchers.IO) {
             songDao.incrementPlayCount(id)
+        }
+    }
+
+    suspend fun setSongToFavourite(songId: String) {
+        withContext(Dispatchers.IO) {
+            songDao.setSongToFavourite(songId)
+        }
     }
 
     override suspend fun getCategoryForParenId(parentId: String): List<Category> {
@@ -244,8 +248,12 @@ class StorageMediaSource @Inject constructor(
 
     private suspend fun getSongItemsForPlaylistId(playlistId: Int): List<SongItem> {
         return withContext(Dispatchers.IO) {
-            //val list = playlistDao.getAllSongsWithPlaylistId(playlistId) TODO??
-            songDao.getSongsForArtistId(playlistId.toString())
+            when (playlistId) {
+                Type.NOT_ONCE_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsNotPlayedOnce()
+                Type.FAVOURITES_PLAYLIST -> playlistDao.getAllSongItemsFavourited()
+                Type.MOST_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsMostPlayed()
+                else -> playlistDao.getAllSongItemsWithPlaylistId(playlistId)
+            }
         }
     }
 

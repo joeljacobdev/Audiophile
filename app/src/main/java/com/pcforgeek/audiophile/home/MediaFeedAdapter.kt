@@ -67,11 +67,15 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
                 popupMenu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.delete_menu -> {
-                            delete(songItem)
+                            listener.deleteSong(songItem)
                             true
                         }
                         R.id.add_to_playlist -> {
                             listener.addSongToPlaylist(songItem.id)
+                            true
+                        }
+                        R.id.add_song_to_favourite -> {
+                            listener.setSongToFavourite(songItem.id)
                             true
                         }
                         else -> false
@@ -80,10 +84,6 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
                 popupMenu.show()
             }
             itemView.setOnClickListener { listener.mediaItemClicked(songItem) }
-        }
-
-        private fun delete(songItem: SongItem) {
-            
         }
     }
 
@@ -98,6 +98,8 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
     interface OnClick {
         fun mediaItemClicked(mediaItem: SongItem, browsable: Boolean = false)
         fun addSongToPlaylist(songId: String)
+        fun deleteSong(songItem: SongItem)
+        fun setSongToFavourite(songId: String)
     }
 }
 

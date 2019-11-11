@@ -18,10 +18,13 @@ import com.pcforgeek.audiophile.home.MediaFeedAdapter
 import kotlinx.android.synthetic.main.fragment_feed.*
 import javax.inject.Inject
 
+
+private const val MEDIA_ID_ARG = "media_id_arg"
+
 class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     private lateinit var mediaId: String
-
     private lateinit var mediaFeedAdapter: MediaFeedAdapter
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private val viewModel: SongFeedViewModel by viewModels { viewModelFactory }
@@ -32,32 +35,31 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
         return inflater.inflate(R.layout.fragment_feed, container, false)
     }
 
-
-    fun setMediaId(id: String) {
-        mediaId = id
-    }
-
     companion object {
 
         fun newInstance(mediaId: String): SongFeedFragment {
             return SongFeedFragment().apply {
-                setMediaId(mediaId)
+                val args = Bundle()
+                args.putString(MEDIA_ID_ARG, mediaId)
+                arguments = args
             }
         }
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         App.component.inject(this)
+        mediaId = arguments?.getString(MEDIA_ID_ARG) ?: return
         viewModel.setMediaId(mediaId)
         setupRecyclerView()
         setupObservers()
     }
 
     private fun setupObservers() {
-        viewModel.mediaList.observe(this, Observer { list ->
+        viewModel.mediaList.observe(viewLifecycleOwner, Observer { list ->
             mediaFeedAdapter.addData(list)
         })
-        viewModel.rootMediaId.observe(this, Observer { rootId ->
+        viewModel.rootMediaId.observe(viewLifecycleOwner, Observer { rootId ->
         })
     }
 
@@ -77,10 +79,16 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     }
 
     override fun addSongToPlaylist(songId: String) {
-        // TODO open AddToPlaylist
-        println("SongFeedFragment clicked - open AddToPlaylistFragment")
         if (activity is MainActivity) {
             (activity as MainActivity).openAddToPlaylistFragment(songId)
         }
+    }
+
+    override fun deleteSong(songItem: SongItem) {
+        viewModel.deleteSong(songItem)
+    }
+
+    override fun setSongToFavourite(songId: String) {
+        viewModel.setSongToFavourite(songId)
     }
 }

@@ -39,7 +39,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist),
     }
 
     private fun setupObservers() {
-        viewModel.playlist.observe(this, Observer {
+        viewModel.playlist.observe(viewLifecycleOwner, Observer {
             playlistFeedAdapter.addData(it)
         })
     }
@@ -54,7 +54,6 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist),
 
     override fun playlistClicked(playlist: Category.Playlist, browsable: Boolean) {
         if (browsable) {
-            // TODO
             val id = "playlist/${playlist.id}"
             fragmentManager?.let {
                 it.beginTransaction().replace(

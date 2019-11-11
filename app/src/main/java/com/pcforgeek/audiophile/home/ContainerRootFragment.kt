@@ -2,15 +2,16 @@ package com.pcforgeek.audiophile.home
 
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.fragment.app.Fragment
 import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.home.category.CategoryFeedGridFragment
+import com.pcforgeek.audiophile.home.playlist.PlaylistFragment
+import com.pcforgeek.audiophile.util.Type
 
-class GridFeedRootFragment : Fragment() {
+class ContainerRootFragment : Fragment() {
 
     private lateinit var mediaId: String
 
@@ -19,8 +20,8 @@ class GridFeedRootFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(mediaId: String): GridFeedRootFragment {
-            return GridFeedRootFragment().apply {
+        fun newInstance(mediaId: String): ContainerRootFragment {
+            return ContainerRootFragment().apply {
                 setMediaId(mediaId)
             }
         }
@@ -35,9 +36,18 @@ class GridFeedRootFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        childFragmentManager.beginTransaction().replace(R.id.gridFeedRootContainer, CategoryFeedGridFragment.newInstance(mediaId))
-            .commit()
+        if (mediaId == Type.PLAYLIST_MEDIA_ID)
+            childFragmentManager.beginTransaction().replace(
+                R.id.gridFeedRootContainer,
+                PlaylistFragment.newInstance()
+            )
+                .commit()
+        else
+            childFragmentManager.beginTransaction().replace(
+                R.id.gridFeedRootContainer,
+                CategoryFeedGridFragment.newInstance(mediaId)
+            )
+                .commit()
     }
 
 

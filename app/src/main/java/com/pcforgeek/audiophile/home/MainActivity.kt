@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         tabs.makeVisible()
         viewpager.makeVisible()
         viewpager.adapter = tabsAdapter
-        viewpager.offscreenPageLimit = 2
+        viewpager.offscreenPageLimit = 3
         tabs.setupWithViewPager(viewpager)
     }
 
@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity() {
             mainFragmentContainer.makeGone()
         } else if (tabs.isVisible) {
             val fragment = viewpager.adapter?.instantiateItem(viewpager, viewpager.currentItem)
-            if (fragment is GridFeedRootFragment) {
+            if (fragment is ContainerRootFragment) {
                 val frag =
                     fragment.childFragmentManager.findFragmentById(R.id.gridFeedRootContainer)
                 if (frag is SongFeedFragment)
