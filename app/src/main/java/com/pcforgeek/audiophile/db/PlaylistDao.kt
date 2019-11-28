@@ -4,12 +4,16 @@ import androidx.room.*
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.data.model.PlaylistItem
 import com.pcforgeek.audiophile.data.model.SongItem
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistDao {
 
     @Query("SELECT * FROM Playlist")
     suspend fun getAllPlaylist(): List<Category.Playlist>
+
+    @Query("SELECT * FROM Playlist")
+    fun getAllPlaylistFlow(): Flow<List<Category.Playlist>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaylist(playlist: Category.Playlist)
@@ -26,14 +30,26 @@ interface PlaylistDao {
     @Query("SELECT s.* FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.songId")
     suspend fun getAllSongItemsWithPlaylistId(id: Int): List<SongItem>
 
+    @Query("SELECT s.* FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.songId")
+    fun getAllSongItemsWithPlaylistIdFlow(id: Int): Flow<List<SongItem>>
+
     @Query("SELECT * FROM SongItem WHERE playCount = 0")
     suspend fun getAllSongItemsNotPlayedOnce(): List<SongItem>
+
+    @Query("SELECT * FROM SongItem WHERE playCount = 0")
+    fun getAllSongItemsNotPlayedOnceFlow(): Flow<List<SongItem>>
 
     @Query("SELECT * FROM SongItem WHERE favourite = 1")
     suspend fun getAllSongItemsFavourited(): List<SongItem>
 
+    @Query("SELECT * FROM SongItem WHERE favourite = 1")
+    fun getAllSongItemsFavouritedFlow(): Flow<List<SongItem>>
+
     @Query("SELECT * FROM SongItem where playCount not in (0) order by playCount desc limit 30")
     suspend fun getAllSongItemsMostPlayed(): List<SongItem>
+
+    @Query("SELECT * FROM SongItem where playCount not in (0) order by playCount desc limit 30")
+    fun getAllSongItemsMostPlayedFlow(): Flow<List<SongItem>>
 
     @Query("SELECT count(*) FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.songId")
     suspend fun getAllSongItemsWithPlaylistIdCount(id: Int): Int
@@ -41,4 +57,7 @@ interface PlaylistDao {
     // for autocomplete text
     @Query("SELECT * from Playlist where playlistId NOT IN (1, 2, 3) ")
     suspend fun getAllPlaylistForAutoComplete(): List<Category.Playlist>
+
+    @Query("SELECT * from Playlist where playlistId NOT IN (1, 2, 3) ")
+    fun getAllPlaylistForAutoCompleteFlow(): Flow<List<Category.Playlist>>
 }

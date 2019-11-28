@@ -3,12 +3,12 @@ package com.pcforgeek.audiophile.data
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import androidx.annotation.IntDef
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.util.*
+import kotlinx.coroutines.flow.Flow
 
 interface MusicSource : Iterable<SongItem> {
 
@@ -18,9 +18,9 @@ interface MusicSource : Iterable<SongItem> {
     fun search(term: String, extras: Bundle): List<SongItem>
     suspend fun incrementPlayCount(id: String, duration: Long, current: Long)
     suspend fun incrementPlayCount(id: String)
-    suspend fun getCategoryForParenId(parentId: String): List<Category>
-    suspend fun getSongItemsForType(type: String, id: String): List<SongItem>
-    suspend fun getSongItemsForParentId(parentId: String): List<SongItem>
+    suspend fun getCategoryForParenId(parentId: String): Flow<List<Category>>
+    suspend fun getSongItemsForType(type: String, id: String): Flow<List<SongItem>>
+    suspend fun getSongItemsForParentId(parentId: String): Flow<List<SongItem>>
     suspend fun onBlacklistUpdated()
 }
 

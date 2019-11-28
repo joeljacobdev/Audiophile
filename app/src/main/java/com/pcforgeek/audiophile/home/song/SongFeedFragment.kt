@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pcforgeek.audiophile.App
 import com.pcforgeek.audiophile.R
@@ -56,9 +57,11 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     }
 
     private fun setupObservers() {
-        viewModel.mediaList.observe(viewLifecycleOwner, Observer { list ->
-            mediaFeedAdapter.addData(list)
-        })
+        lifecycleScope.launchWhenResumed {
+            viewModel.getSongs().observe(viewLifecycleOwner, Observer { list ->
+                mediaFeedAdapter.addData(list)
+            })
+        }
         viewModel.rootMediaId.observe(viewLifecycleOwner, Observer { rootId ->
         })
     }

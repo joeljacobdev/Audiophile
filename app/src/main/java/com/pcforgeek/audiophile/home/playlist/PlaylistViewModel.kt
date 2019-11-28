@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.data.model.PlaylistItem
 import com.pcforgeek.audiophile.db.PlaylistDao
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,9 +20,13 @@ class PlaylistViewModel @Inject constructor(private val playlistDao: PlaylistDao
     fun getAllPlaylist(showDefaultPlaylist: Boolean = true) {
         viewModelScope.launch {
             if (!showDefaultPlaylist)
-                _playlist.value = playlistDao.getAllPlaylistForAutoComplete()
+                playlistDao.getAllPlaylistForAutoCompleteFlow().collect {
+                    _playlist.value = it
+                }
             else
-                _playlist.value = playlistDao.getAllPlaylist()
+                playlistDao.getAllPlaylistFlow().collect {
+                    _playlist.value = it
+                }
         }
     }
 

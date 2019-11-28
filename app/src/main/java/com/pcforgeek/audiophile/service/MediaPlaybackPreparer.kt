@@ -15,6 +15,10 @@ import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.util.*
 import com.pcforgeek.audiophile.util.Type.AUDIOPHILE_TYPE
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -85,11 +89,19 @@ class MediaPlaybackPreparer(
     override fun onPrepare() = Unit
 
     // create playlist by based on type
+    @ExperimentalCoroutinesApi
     private suspend fun buildPlaylist(type: String, mediaId: String): List<MediaMetadataCompat> {
-        val songItems = musicSource.getSongItemsForType(type, mediaId)
-        return songItems.map { song ->
-            MediaMetadataCompat.Builder().from(song).build()
-        }
+        var ans: List<MediaMetadataCompat> = emptyList()
+        musicSource.getSongItemsForType(type, mediaId)
+            .take(1)
+            .map { songs ->
+                songs.map { song: SongItem ->
+                    MediaMetadataCompat.Builder().from(song).build()
+                }
+            }.collect {
+                ans = it
+            }
+        return ans
     }
 
     interface OnPlaylistListener {

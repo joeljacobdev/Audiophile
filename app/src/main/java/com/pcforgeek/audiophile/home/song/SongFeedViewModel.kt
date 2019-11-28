@@ -13,6 +13,7 @@ import com.pcforgeek.audiophile.service.NOTHING_PLAYING
 import com.pcforgeek.audiophile.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -28,15 +29,13 @@ class SongFeedViewModel @Inject constructor(
     private var mediaId: String = Type.ROOT_MEDIA_ID
     fun setMediaId(value: String) {
         mediaId = value
-        getSongs(value)
         Timber.i("SongFeedViewModel mediaId=${mediaId} set")
     }
 
-    private fun getSongs(id: String) {
-        viewModelScope.launch {
-            _mediaList.value = storage.getSongItemsForParentId(id)
+    suspend fun getSongs(): LiveData<List<SongItem>> =
+        withContext(Dispatchers.IO) {
+            return@withContext storage.getSongItemsForParentId(mediaId).asLiveData()
         }
-    }
 
     val rootMediaId: LiveData<String> =
         Transformations.map(mediaSessionConnection.isConnected) { isConnected ->

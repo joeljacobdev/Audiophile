@@ -12,6 +12,8 @@ import com.pcforgeek.audiophile.db.PlaylistDao
 import com.pcforgeek.audiophile.db.SongDao
 import com.pcforgeek.audiophile.util.Type
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -159,41 +161,46 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
-    override suspend fun getCategoryForParenId(parentId: String): List<Category> {
+    override suspend fun getCategoryForParenId(parentId: String): Flow<List<Category>> {
         return when (parentId) {
             Type.ALBUM_MEDIA_ID -> getAllAlbums()
             Type.ARTIST_MEDIA_ID -> getAllArtist()
             Type.PLAYLIST_MEDIA_ID -> getAllPlaylist()
-            else -> emptyList()
+            else -> flowOf(listOf())
         }
     }
 
-    override suspend fun getSongItemsForParentId(parentId: String): List<SongItem> {
+    override suspend fun getSongItemsForParentId(parentId: String): Flow<List<SongItem>> {
         return when (parentId) {
             Type.ALL_MEDIA_ID -> getAllSongs()
-            Type.EMPTY -> emptyList()
+            Type.EMPTY -> getEmptylist()
             else -> {
                 val split = parentId.split("/")
-                if (split.size < 2) return emptyList()
+                if (split.size < 2) return getEmptylist()
                 when {
                     split[0] == Type.ALBUM -> getSongItemsForAlbumId(split[1])
                     split[0] == Type.ARTIST -> getSongItemsForArtistId(split[1])
                     split[0] == Type.PLAYLIST -> getSongItemsForPlaylistId(split[1].toInt()) // TODO use String
-                    else -> emptyList()
+                    else -> getEmptylist()
                 }
             }
         }
     }
 
-    override suspend fun getSongItemsForType(type: String, id: String): List<SongItem> {
+    override suspend fun getSongItemsForType(type: String, id: String): Flow<List<SongItem>> {
         return when (type) {
             Type.ALL_MEDIA_ID -> getAllSongs()
-            Type.EMPTY -> emptyList()
+            Type.EMPTY -> getEmptylist()
             Type.ALBUM -> getSongItemsForAlbumId(id)
             Type.ARTIST -> getSongItemsForArtistId(id)
             Type.PLAYLIST -> getSongItemsForPlaylistId(id.toInt()) // TODO use String
-            else -> emptyList()
+            else -> getEmptylist()
         }
+    }
+
+    private fun getEmptylist(): Flow<List<SongItem>> {
+        val list: List<SongItem> = mutableListOf()
+        return flowOf(list)
     }
 
     override suspend fun onBlacklistUpdated() {
@@ -208,51 +215,43 @@ class StorageMediaSource @Inject constructor(
     }
 
 
-    private suspend fun getAllSongs(): List<SongItem> {
-        if (songList.isNotEmpty()) return songList
+    private suspend fun getAllSongs(): Flow<List<SongItem>> {
+        return withContext(Dispatchers.IO) { songDao.getAllSongsFlow() }
+    }
+
+    private suspend fun getAllAlbums(): Flow<List<Category.Album>> {
+        return withContext(Dispatchers.IO) {
+            categoryDao.getAllAlbumsFlow()
+        }
+    }
+
+    private suspend fun getAllArtist(): Flow<List<Category.Artist>> {
+        return withContext(Dispatchers.IO) {
+            categoryDao.getAllArtistsFlow()
+        }
+    }
+
+    private suspend fun getAllPlaylist(): Flow<List<Category.Playlist>> =
         withContext(Dispatchers.IO) {
-            load()
+            return@withContext playlistDao.getAllPlaylistFlow()
         }
-        return songList
+
+
+    private suspend fun getSongItemsForAlbumId(albumId: String): Flow<List<SongItem>> {
+        return withContext(Dispatchers.IO) { songDao.getSongsForAlbumIdFlow(albumId) }
     }
 
-    private suspend fun getAllAlbums(): List<Category.Album> {
-        return withContext(Dispatchers.IO) {
-            categoryDao.getAllAlbums()
-        }
+    private suspend fun getSongItemsForArtistId(artistId: String): Flow<List<SongItem>> {
+        return withContext(Dispatchers.IO) { songDao.getSongsForArtistIdFlow(artistId) }
     }
 
-    private suspend fun getAllArtist(): List<Category.Artist> {
-        return withContext(Dispatchers.IO) {
-            categoryDao.getAllArtists()
-        }
-    }
-
-    private suspend fun getAllPlaylist(): List<Category.Playlist> {
-        return withContext(Dispatchers.IO) {
-            playlistDao.getAllPlaylist()
-        }
-    }
-
-    private suspend fun getSongItemsForAlbumId(albumId: String): List<SongItem> {
-        return withContext(Dispatchers.IO) {
-            songDao.getSongsForAlbumId(albumId)
-        }
-    }
-
-    private suspend fun getSongItemsForArtistId(artistId: String): List<SongItem> {
-        return withContext(Dispatchers.IO) {
-            songDao.getSongsForArtistId(artistId)
-        }
-    }
-
-    private suspend fun getSongItemsForPlaylistId(playlistId: Int): List<SongItem> {
+    private suspend fun getSongItemsForPlaylistId(playlistId: Int): Flow<List<SongItem>> {
         return withContext(Dispatchers.IO) {
             when (playlistId) {
-                Type.NOT_ONCE_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsNotPlayedOnce()
-                Type.FAVOURITES_PLAYLIST -> playlistDao.getAllSongItemsFavourited()
-                Type.MOST_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsMostPlayed()
-                else -> playlistDao.getAllSongItemsWithPlaylistId(playlistId)
+                Type.NOT_ONCE_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsNotPlayedOnceFlow()
+                Type.FAVOURITES_PLAYLIST -> playlistDao.getAllSongItemsFavouritedFlow()
+                Type.MOST_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsMostPlayedFlow()
+                else -> playlistDao.getAllSongItemsWithPlaylistIdFlow(playlistId)
             }
         }
     }

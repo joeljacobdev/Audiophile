@@ -48,7 +48,7 @@ class CategoryFeedGridFragment : Fragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         App.component.inject(this)
-        viewModel.setCateoryId(mediaId)
+        viewModel.setCategoryId(mediaId)
         setupRecyclerView()
         setupObservers()
     }

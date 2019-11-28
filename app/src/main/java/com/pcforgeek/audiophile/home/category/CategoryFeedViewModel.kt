@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pcforgeek.audiophile.data.StorageMediaSource
 import com.pcforgeek.audiophile.data.model.Category
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,11 +17,12 @@ class CategoryFeedViewModel @Inject constructor(private val storage: StorageMedi
     val categoryItemLiveData: LiveData<List<Category>> = _categoryItemLiveData
 
     private lateinit var categoryId: String
-    fun setCateoryId(categoryId: String) {
+    fun setCategoryId(categoryId: String) {
         this.categoryId = categoryId
         viewModelScope.launch {
-            println("DEBUG - categoryId - $categoryId")
-            _categoryItemLiveData.value = storage.getCategoryForParenId(categoryId)
+            storage.getCategoryForParenId(categoryId).collect {
+                _categoryItemLiveData.value = it
+            }
         }
     }
 
