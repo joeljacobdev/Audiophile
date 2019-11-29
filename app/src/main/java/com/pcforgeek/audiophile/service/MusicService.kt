@@ -32,7 +32,6 @@ import com.pcforgeek.audiophile.data.MusicSource
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
 import com.pcforgeek.audiophile.util.id
-import com.pcforgeek.audiophile.util.title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -336,7 +335,11 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
             val notification = if (mediaController.metadata != null
                 && updatedState != PlaybackStateCompat.STATE_NONE
             ) {
-                notificationBuilder.buildNotification(mediaSession.sessionToken)
+                val currentIndex = exoPlayer.currentWindowIndex
+                notificationBuilder.buildNotification(
+                    mediaSession.sessionToken,
+                    playlist[currentIndex]
+                )
             } else {
                 null
             }

@@ -21,6 +21,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.support.v4.media.MediaMetadataCompat
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.media.app.NotificationCompat.MediaStyle
@@ -61,13 +62,12 @@ class NotificationBuilder(private val context: Context) {
     private val stopPendingIntent =
         MediaButtonReceiver.buildMediaButtonPendingIntent(context, ACTION_STOP)
 
-    fun buildNotification(sessionToken: MediaSessionCompat.Token): Notification {
+    fun buildNotification(sessionToken: MediaSessionCompat.Token, metadata: MediaMetadataCompat): Notification {
         App.component.inject(this)
         if (shouldCreateNowPlayingChannel()) {
             createNowPlayingChannel()
         }
         val controller = MediaControllerCompat(context, sessionToken)
-        val description = controller.metadata
         val playbackState = controller.playbackState
 
         val builder = NotificationCompat.Builder(context, NOW_PLAYING_CHANNEL)
@@ -98,8 +98,8 @@ class NotificationBuilder(private val context: Context) {
             .setShowCancelButton(true)
 
         return builder.setContentIntent(controller.sessionActivity)
-            .setContentText(description.artist ?: "unknown")
-            .setContentTitle(description.title)
+            .setContentText(metadata.artist ?: "unknown")
+            .setContentTitle(metadata.title)
             .setDeleteIntent(stopPendingIntent)
             .setOnlyAlertOnce(true)
             .setSmallIcon(R.drawable.ic_headset_black_24dp)
