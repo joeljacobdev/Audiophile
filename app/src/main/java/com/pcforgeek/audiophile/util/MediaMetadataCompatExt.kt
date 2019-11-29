@@ -6,7 +6,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
-import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 
 @MediaBrowserCompat.MediaItem.Flags
@@ -188,8 +188,8 @@ inline var MediaMetadataCompat.Builder.type: Int
         putLong(METADATA_KEY_TYPE, value.toLong())
     }
 
-fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory): ExtractorMediaSource =
-    ExtractorMediaSource.Factory(dataSourceFactory)
+fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory): ProgressiveMediaSource =
+    ProgressiveMediaSource.Factory(dataSourceFactory)
         .createMediaSource(mediaUri)
 
 fun List<MediaMetadataCompat>.toMediaSource(
@@ -209,5 +209,3 @@ const val METADATA_KEY_AUDIOPHILE_FLAGS =
 const val METADATA_KEY_ARTIST_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ARTIST_ID"
 const val METADATA_KEY_ALBUM_ID = "com.pcforgeek.audiophile.media.METADATA_KEY_ALBUM_ID"
 const val METADATA_KEY_TYPE = "com.pcforgeek.audiophile.media.METADATA_KEY_TYPE"
-const val METADATA_KEY_PLAY_COUNT = "com.pcforgeek.audiophile.media.METADATA_KEY_PLAY_COUNT"
-const val METADATA_KEY_FAVOURITE = "com.pcforgeek.audiophile.media.METADATA_KEY_FAVOURITE"
