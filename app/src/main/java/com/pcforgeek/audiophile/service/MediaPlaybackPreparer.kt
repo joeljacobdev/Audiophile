@@ -1,5 +1,6 @@
 package com.pcforgeek.audiophile.service
 
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.ResultReceiver
@@ -31,7 +32,8 @@ class MediaPlaybackPreparer(
     private val musicSource: MusicSource,
     private val exoPlayer: ExoPlayer,
     private val dataSourceFactory: DefaultDataSourceFactory,
-    private val listener: OnPlaylistListener
+    private val listener: OnPlaylistListener,
+    private val audioFocusHelper: AudioFocusHelper
 ) : MediaSessionConnector.PlaybackPreparer {
 
     override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
@@ -63,6 +65,7 @@ class MediaPlaybackPreparer(
                 PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH or
                 PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
 
+    @ExperimentalCoroutinesApi
     override fun onPrepareFromMediaId(mediaId: String?, extras: Bundle?) {
         if (mediaId == null) return
         musicSource.whenReady {
@@ -76,10 +79,19 @@ class MediaPlaybackPreparer(
                 Timber.i("onPlayFromMediaID=${mediaId} size=${metadataList.size}")
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
                 val indexOfItem = metadataList.indexOf(songMetadata)
-                exoPlayer.prepare(mediaSource)
-                // what is the UI where this happen
-                exoPlayer.seekTo(indexOfItem, 0)
                 listener.onPlaylistCreated(metadataList)
+                when (audioFocusHelper.requestAudioFocus()) {
+                    AudioManager.AUDIOFOCUS_REQUEST_GRANTED -> {
+                        exoPlayer.prepare(mediaSource)
+                        // what is the UI where this happen
+                        exoPlayer.seekTo(indexOfItem, 0)
+                    }
+                    AudioManager.AUDIOFOCUS_REQUEST_FAILED -> {
+                    }
+                    AudioManager.AUDIOFOCUS_REQUEST_DELAYED -> {
+                    }
+                    // TODO what to do on failure and delay?
+                }
             }
         }
     }

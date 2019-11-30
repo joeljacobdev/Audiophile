@@ -6,8 +6,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
@@ -31,19 +31,18 @@ import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.MusicSource
 import com.pcforgeek.audiophile.notifcation.NOW_PLAYING_NOTIFICATION
 import com.pcforgeek.audiophile.notifcation.NotificationBuilder
+import com.pcforgeek.audiophile.util.AudioFocusHelper
 import com.pcforgeek.audiophile.util.id
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 
-class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlaylistListener {
-    override fun onPlaylistCreated(list: List<MediaMetadataCompat>) {
-        playlist.clear()
-        playlist.addAll(list)
-    }
+class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlaylistListener,
+    AudioFocusHelper.OnAudioFocusHelper {
 
     // A class to encapsulate a collection of attributes describing information about an audio stream.
     private val audiophyAttributes = AudioAttributes.Builder()
@@ -53,14 +52,14 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
 
     private val exoPlayer: ExoPlayer by lazy {
         ExoPlayerFactory.newSimpleInstance(this).apply {
-            setAudioAttributes(audiophyAttributes, true)
+            // handleAudiofocus automatically - false
+            setAudioAttributes(audiophyAttributes, false)
         }
     }
 
     @Inject
     lateinit var mediaSource: MusicSource
-    private lateinit var audioFocusRequest: AudioFocusRequest
-    private lateinit var audioManager: AudioManager
+    private lateinit var audioFocusHelper: AudioFocusHelper
     private lateinit var playbackPreparer: MediaPlaybackPreparer
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaController: MediaControllerCompat
@@ -80,17 +79,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
     override fun onCreate() {
         super.onCreate()
         App.component.inject(this)
-//        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-//            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
-//                setOnAudioFocusChangeListener(afChangeListener)
-//                setAudioAttributes(android.media.AudioAttributes.Builder().run {
-//                    setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
-//                    build()
-//                })
-//                build()
-//            }
+        audioFocusHelper = AudioFocusHelper(this)
 
         // Build a PendingIntent that can be used to launch the UI.
         val sessionActivityPendingIntent =
@@ -188,7 +177,14 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
                 )
 
             playbackPreparer =
-                MediaPlaybackPreparer(serviceScope, mediaSource, exoPlayer, dataSourceFactory, this)
+                MediaPlaybackPreparer(
+                    serviceScope,
+                    mediaSource,
+                    exoPlayer,
+                    dataSourceFactory,
+                    this,
+                    audioFocusHelper
+                )
 
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(playbackPreparer)
@@ -215,7 +211,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
             isActive = false
             release()
         }
-
+        audioFocusHelper.abandonAudioFocus()
         serviceJob.cancel()
     }
 
@@ -296,11 +292,6 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
         }
     }
 
-//
-//    private val afChangeListener = AudioManager.OnAudioFocusChangeListener {
-//
-//    }
-
     private fun removeNowPlayingNotification() {
         stopForeground(true)
     }
@@ -317,6 +308,19 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
                 )
             }
         }
+    }
+
+    override fun onPlaylistCreated(list: List<MediaMetadataCompat>) {
+        playlist.clear()
+        playlist.addAll(list)
+    }
+
+    override fun onAudioFocusGain() {
+        mediaController.transportControls.play()
+    }
+
+    override fun onAudioFocusLoss() {
+        mediaController.transportControls.pause()
     }
 
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
