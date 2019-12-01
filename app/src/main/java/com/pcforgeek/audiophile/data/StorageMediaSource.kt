@@ -1,5 +1,6 @@
 package com.pcforgeek.audiophile.data
 
+import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
 import androidx.core.net.toUri
@@ -15,6 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
+import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
 
@@ -212,6 +215,45 @@ class StorageMediaSource @Inject constructor(
         songDao.deleteRedundantItems(ids)
         songDao.insertAllSongs(list)
         isLoading = false
+    }
+
+    override suspend fun delete(songItem: SongItem): Boolean {
+        return withContext(Dispatchers.IO) {
+            if (deleteSong(songItem)) {
+                songDao.deleteSong(songItem)
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun deleteSong(songItem: SongItem): Boolean {
+        runCatching {
+            val file = File(songItem.mediaUri.encodedPath ?: return false)
+            file.delete()
+            if (file.exists()) {
+                file.canonicalFile.delete()
+                if (file.exists()) {
+                    context.deleteFile(file.name)
+                }
+            }
+            if (file.exists()) {
+                return false
+            } else {
+                val resolver = context.contentResolver
+                val deleteUri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    songItem.id.toLong()
+                )
+                resolver.delete(deleteUri, null, null)
+            }
+            return true
+        }.onFailure {
+            Timber.e(it)
+            return false
+        }
+        return false
     }
 
 

@@ -22,6 +22,7 @@ interface MusicSource : Iterable<SongItem> {
     suspend fun getSongItemsForType(type: String, id: String): Flow<List<SongItem>>
     suspend fun getSongItemsForParentId(parentId: String): Flow<List<SongItem>>
     suspend fun onBlacklistUpdated()
+    suspend fun delete(songItem: SongItem): Boolean
 }
 
 

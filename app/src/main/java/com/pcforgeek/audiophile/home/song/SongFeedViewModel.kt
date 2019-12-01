@@ -23,8 +23,7 @@ class SongFeedViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _mediaList = MutableLiveData<List<SongItem>>()
-    val mediaList: LiveData<List<SongItem>>
-        get() = _mediaList
+    val mediaList: LiveData<List<SongItem>> = _mediaList
 
     private var mediaId: String = Type.ROOT_MEDIA_ID
     fun setMediaId(value: String) {
@@ -141,6 +140,11 @@ class SongFeedViewModel @Inject constructor(
 
     fun deleteSong(songItem: SongItem) {
         viewModelScope.launch(Dispatchers.IO) {
+            if (storage.delete(songItem)) {
+                Timber.i("Song deleted ${songItem.title}")
+            } else {
+                Timber.i("Song=${songItem.title} at path=${songItem.mediaUri.path} not deleted ")
+            }
         }
     }
 
