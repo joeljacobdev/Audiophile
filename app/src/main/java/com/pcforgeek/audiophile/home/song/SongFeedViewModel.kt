@@ -25,15 +25,17 @@ class SongFeedViewModel @Inject constructor(
     private val _mediaList = MutableLiveData<List<SongItem>>()
     val mediaList: LiveData<List<SongItem>> = _mediaList
 
-    private var mediaId: String = Type.ROOT_MEDIA_ID
-    fun setMediaId(value: String) {
-        mediaId = value
-        Timber.i("SongFeedViewModel mediaId=${mediaId} set")
+    private var mediaId: String = Type.EMPTY
+    private var type: String = Type.EMPTY
+    fun setMediaIdAndType(mediaId: String, type: String) {
+        this.mediaId = mediaId
+        this.type = type
+        Timber.i("SongFeedViewModel mediaId=${this.mediaId} type=${this.type} set")
     }
 
     suspend fun getSongs(): LiveData<List<SongItem>> =
         withContext(Dispatchers.IO) {
-            return@withContext storage.getSongItemsForParentId(mediaId).asLiveData()
+            return@withContext storage.getSongItemsForType(type, mediaId).asLiveData()
         }
 
     val rootMediaId: LiveData<String> =

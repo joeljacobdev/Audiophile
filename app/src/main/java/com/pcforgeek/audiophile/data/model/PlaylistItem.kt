@@ -9,7 +9,7 @@ import androidx.room.ForeignKey.CASCADE
 data class PlaylistItem(
     @ForeignKey(
         entity = Category.Playlist::class,
-        parentColumns = ["playlistId"],
+        parentColumns = ["id"],
         childColumns = ["playlistId"],
         onDelete = CASCADE,
         onUpdate = CASCADE
@@ -19,7 +19,7 @@ data class PlaylistItem(
 
     @ForeignKey(
         entity = SongItem::class,
-        parentColumns = ["songId"],
+        parentColumns = ["id"],
         childColumns = ["songId"],
         onDelete = CASCADE,
         onUpdate = CASCADE

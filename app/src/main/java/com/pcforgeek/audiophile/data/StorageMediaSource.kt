@@ -95,13 +95,13 @@ class StorageMediaSource @Inject constructor(
                     )
                     categoryDao.insertAlbum(
                         Category.Album(
-                            "${Type.ALBUM}/${mediaItem.albumId}",
+                            mediaItem.albumId,
                             mediaItem.album
                         )
                     )
                     categoryDao.insertArtist(
                         Category.Artist(
-                            "${Type.ARTIST}/${mediaItem.artistId}",
+                            mediaItem.artistId,
                             mediaItem.artist
                         )
                     )
@@ -164,29 +164,12 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
-    override suspend fun getCategoryForParenId(parentId: String): Flow<List<Category>> {
+    override suspend fun getCategoryForParentId(parentId: String): Flow<List<Category>> {
         return when (parentId) {
             Type.ALBUM_MEDIA_ID -> getAllAlbums()
             Type.ARTIST_MEDIA_ID -> getAllArtist()
             Type.PLAYLIST_MEDIA_ID -> getAllPlaylist()
             else -> flowOf(listOf())
-        }
-    }
-
-    override suspend fun getSongItemsForParentId(parentId: String): Flow<List<SongItem>> {
-        return when (parentId) {
-            Type.ALL_MEDIA_ID -> getAllSongs()
-            Type.EMPTY -> getEmptylist()
-            else -> {
-                val split = parentId.split("/")
-                if (split.size < 2) return getEmptylist()
-                when {
-                    split[0] == Type.ALBUM -> getSongItemsForAlbumId(split[1])
-                    split[0] == Type.ARTIST -> getSongItemsForArtistId(split[1])
-                    split[0] == Type.PLAYLIST -> getSongItemsForPlaylistId(split[1].toInt()) // TODO use String
-                    else -> getEmptylist()
-                }
-            }
         }
     }
 
@@ -202,8 +185,7 @@ class StorageMediaSource @Inject constructor(
     }
 
     private fun getEmptylist(): Flow<List<SongItem>> {
-        val list: List<SongItem> = mutableListOf()
-        return flowOf(list)
+        return flowOf(mutableListOf())
     }
 
     override suspend fun onBlacklistUpdated() {

@@ -20,7 +20,7 @@ class CategoryFeedViewModel @Inject constructor(private val storage: StorageMedi
     fun setCategoryId(categoryId: String) {
         this.categoryId = categoryId
         viewModelScope.launch {
-            storage.getCategoryForParenId(categoryId).collect {
+            storage.getCategoryForParentId(categoryId).collect {
                 _categoryItemLiveData.value = it
             }
         }

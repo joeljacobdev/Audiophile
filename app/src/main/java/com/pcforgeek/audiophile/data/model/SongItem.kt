@@ -3,25 +3,14 @@ package com.pcforgeek.audiophile.data.model
 import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import com.pcforgeek.audiophile.home.song.NO_RES
 
-@Entity(primaryKeys = ["songId", "artistId", "albumId"])
+@Entity(primaryKeys = ["id"])
 data class SongItem(
-    @ColumnInfo(name = "songId")
+    @ColumnInfo(name = "id")
     val id: String,
-    @ForeignKey(
-        entity = Category.Artist::class,
-        parentColumns = ["artistId"],
-        childColumns = ["artistId"]
-    )
     @ColumnInfo(name = "artistId")
     val artistId: String,
-    @ForeignKey(
-        entity = Category.Artist::class,
-        parentColumns = ["albumId"],
-        childColumns = ["albumId"]
-    )
     @ColumnInfo(name = "albumId")
     val albumId: String,
     val title: String = "",

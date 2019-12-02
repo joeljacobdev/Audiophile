@@ -19,10 +19,10 @@ interface SongDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAllSongs(songs: List<SongItem>)
 
-    @Query("UPDATE SongItem set playCount=(select playCount from SongItem where songId=:id)+1 where songId=:id")
+    @Query("UPDATE SongItem set playCount=(select playCount from SongItem where id=:id)+1 where id=:id")
     suspend fun incrementPlayCount(id: String)
 
-    @Query("UPDATE SongItem set favourite=1 where songId=:songId")
+    @Query("UPDATE SongItem set favourite=1 where id=:songId")
     suspend fun  setSongToFavourite(songId: String)
 
     @Delete
@@ -31,10 +31,10 @@ interface SongDao {
     @Delete
     suspend fun deleteSongs(songs: List<SongItem>)
 
-    @Query("DELETE from SongItem where songId NOT IN (:filterValues)")
+    @Query("DELETE from SongItem where id NOT IN (:filterValues)")
     suspend fun deleteRedundantItems(filterValues: List<String>)
 
-    @Query("SELECT count(*) from SongItem where songId NOT IN (:filterValues)")
+    @Query("SELECT count(*) from SongItem where id NOT IN (:filterValues)")
     suspend fun deleteRedundantItemsCount(filterValues: List<String>): Int
 
     @Query("SELECT * FROM SongItem WHERE albumId = :id ")

@@ -14,6 +14,7 @@ import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.di.ViewModelFactory
 import com.pcforgeek.audiophile.home.song.SongFeedFragment
+import com.pcforgeek.audiophile.util.Type
 import kotlinx.android.synthetic.main.fragment_feed_grid.*
 import javax.inject.Inject
 
@@ -68,14 +69,22 @@ class CategoryFeedGridFragment : Fragment(),
     }
 
     override fun categoryItemClicked(category: Category, browsable: Boolean) {
+        var type = Type.EMPTY
+        // we are not handling / reaching playlist from CategoryGridFeedFragment, so don't handle Category.Playlist case
         val id = when (category) {
-            is Category.Album -> category.id
-            is Category.Artist -> category.id
-            else -> ""
+            is Category.Album -> {
+                type = Type.ALBUM
+                category.id
+            }
+            is Category.Artist -> {
+                type = Type.ARTIST
+                category.id
+            }
+            else -> Type.EMPTY
         }
         fragmentManager?.let {
             it.beginTransaction()
-                .replace(R.id.gridFeedRootContainer, SongFeedFragment.newInstance(id))
+                .replace(R.id.gridFeedRootContainer, SongFeedFragment.newInstance(id, type))
                 .addToBackStack(null)
                 .commit()
         }

@@ -27,10 +27,10 @@ interface PlaylistDao {
     @Delete
     suspend fun deletePlaylistItem(playlistItem: PlaylistItem)
 
-    @Query("SELECT s.* FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.songId")
+    @Query("SELECT s.* FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.id")
     suspend fun getAllSongItemsWithPlaylistId(id: Int): List<SongItem>
 
-    @Query("SELECT s.* FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.songId")
+    @Query("SELECT s.* FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.id")
     fun getAllSongItemsWithPlaylistIdFlow(id: Int): Flow<List<SongItem>>
 
     @Query("SELECT * FROM SongItem WHERE playCount = 0")
@@ -51,13 +51,13 @@ interface PlaylistDao {
     @Query("SELECT * FROM SongItem where playCount not in (0) order by playCount desc limit 30")
     fun getAllSongItemsMostPlayedFlow(): Flow<List<SongItem>>
 
-    @Query("SELECT count(*) FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.songId")
+    @Query("SELECT count(*) FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.id")
     suspend fun getAllSongItemsWithPlaylistIdCount(id: Int): Int
 
     // for autocomplete text
-    @Query("SELECT * from Playlist where playlistId NOT IN (1, 2, 3) ")
+    @Query("SELECT * from Playlist where id NOT IN (1, 2, 3) ")
     suspend fun getAllPlaylistForAutoComplete(): List<Category.Playlist>
 
-    @Query("SELECT * from Playlist where playlistId NOT IN (1, 2, 3) ")
+    @Query("SELECT * from Playlist where id NOT IN (1, 2, 3) ")
     fun getAllPlaylistForAutoCompleteFlow(): Flow<List<Category.Playlist>>
 }

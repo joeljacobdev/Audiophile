@@ -13,6 +13,7 @@ import com.pcforgeek.audiophile.R
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.di.ViewModelFactory
 import com.pcforgeek.audiophile.home.song.SongFeedFragment
+import com.pcforgeek.audiophile.util.Type
 import kotlinx.android.synthetic.main.fragment_playlist.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,11 +57,12 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist),
 
     override fun playlistClicked(playlist: Category.Playlist, browsable: Boolean) {
         if (browsable) {
-            val id = "playlist/${playlist.id}"
+            val id = "${playlist.id}"
+            val type = Type.PLAYLIST
             fragmentManager?.let {
                 it.beginTransaction().replace(
                     R.id.gridFeedRootContainer,
-                    SongFeedFragment.newInstance(id)
+                    SongFeedFragment.newInstance(id, type)
                 ).addToBackStack(null)
                     .commit()
             }

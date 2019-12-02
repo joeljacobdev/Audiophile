@@ -18,9 +18,8 @@ interface MusicSource : Iterable<SongItem> {
     fun search(term: String, extras: Bundle): List<SongItem>
     suspend fun incrementPlayCount(id: String, duration: Long, current: Long)
     suspend fun incrementPlayCount(id: String)
-    suspend fun getCategoryForParenId(parentId: String): Flow<List<Category>>
+    suspend fun getCategoryForParentId(parentId: String): Flow<List<Category>>
     suspend fun getSongItemsForType(type: String, id: String): Flow<List<SongItem>>
-    suspend fun getSongItemsForParentId(parentId: String): Flow<List<SongItem>>
     suspend fun onBlacklistUpdated()
     suspend fun delete(songItem: SongItem): Boolean
 }

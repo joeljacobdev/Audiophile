@@ -18,7 +18,7 @@ class TabsAdapter(private val fragmentManager: FragmentManager) :
     override fun getItem(position: Int): Fragment {
         return when (list[position]) {
             Type.ALL_MEDIA_ID ->
-                SongFeedFragment.newInstance(list[position])
+                SongFeedFragment.newInstance(list[position], Type.ALL_MEDIA_ID)
             Type.ALBUM_MEDIA_ID ->
                 ContainerRootFragment.newInstance(list[position])
             Type.ARTIST_MEDIA_ID ->
