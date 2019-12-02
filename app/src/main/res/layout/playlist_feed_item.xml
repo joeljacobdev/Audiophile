@@ -32,8 +32,21 @@
         android:textColor="@color/dark_primary_font"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/thumbnail"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/overflowOption"
         app:layout_constraintStart_toEndOf="@+id/thumbnail"
         app:layout_constraintTop_toTopOf="@+id/thumbnail"
         tools:text="Playlist Name" />
+
+    <TextView
+        android:id="@+id/overflowOption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="8dp"
+        android:text="@string/overflow_icon_unicode"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:textColor="@color/dark_secondary_font"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

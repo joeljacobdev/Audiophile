@@ -63,7 +63,7 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
             }
             overflowOptions.setOnClickListener {
                 val popupMenu = PopupMenu(it.context, overflowOptions)
-                popupMenu.inflate(R.menu.overflow_options)
+                popupMenu.inflate(R.menu.song_overflow_options)
                 popupMenu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.delete_menu -> {

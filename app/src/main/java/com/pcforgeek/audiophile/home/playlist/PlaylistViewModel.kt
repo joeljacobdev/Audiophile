@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.data.model.PlaylistItem
 import com.pcforgeek.audiophile.db.PlaylistDao
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,6 +42,12 @@ class PlaylistViewModel @Inject constructor(private val playlistDao: PlaylistDao
         viewModelScope.launch {
             val playlist = Category.Playlist(name)
             playlistDao.insertPlaylist(playlist)
+        }
+    }
+
+    fun deletePlaylist(playlist: Category.Playlist) {
+        viewModelScope.launch(Dispatchers.IO) {
+            playlistDao.deletePlaylist(playlist)
         }
     }
 
