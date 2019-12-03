@@ -1,9 +1,6 @@
 package com.pcforgeek.audiophile.data.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 
 sealed class Category {
     @Entity
@@ -36,7 +33,10 @@ sealed class Category {
         val title: String
     ) : Category()
 
-    @Entity
+    @Entity(
+        tableName = "Playlist",
+        indices = [Index(value = ["id"], unique = true)]
+    )
     data class Playlist(
         val title: String
     ) : Category() {

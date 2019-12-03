@@ -3,9 +3,14 @@ package com.pcforgeek.audiophile.data.model
 import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import com.pcforgeek.audiophile.home.song.NO_RES
 
-@Entity(primaryKeys = ["id"])
+@Entity(
+    tableName = "SongItem",
+    primaryKeys = ["id"],
+    indices = [Index(value = ["id"], unique = true)]
+)
 data class SongItem(
     @ColumnInfo(name = "id")
     val id: String,
