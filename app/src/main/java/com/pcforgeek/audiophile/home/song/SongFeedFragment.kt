@@ -18,7 +18,6 @@ import com.pcforgeek.audiophile.home.MainActivity
 import com.pcforgeek.audiophile.home.MediaFeedAdapter
 import kotlinx.android.synthetic.main.fragment_feed.*
 import javax.inject.Inject
-import kotlin.reflect.typeOf
 
 
 private const val MEDIA_ID_ARG = "media_id_arg"
@@ -64,7 +63,7 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     private fun setupObservers() {
         lifecycleScope.launchWhenResumed {
             viewModel.getSongs().observe(viewLifecycleOwner, Observer { list ->
-                mediaFeedAdapter.addData(list)
+                mediaFeedAdapter.submitData(list)
             })
         }
         viewModel.rootMediaId.observe(viewLifecycleOwner, Observer { rootId ->
@@ -72,7 +71,7 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     }
 
     private fun setupRecyclerView() {
-        mediaFeedAdapter = MediaFeedAdapter(mutableListOf(), this)
+        mediaFeedAdapter = MediaFeedAdapter(this)
         songFeed.also {
             it.layoutManager = LinearLayoutManager(context)
             it.adapter = mediaFeedAdapter

@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.pcforgeek.audiophile.R
@@ -13,10 +15,23 @@ import com.pcforgeek.audiophile.data.model.SongItem
 import kotlinx.android.synthetic.main.grid_item_view.view.*
 import kotlinx.android.synthetic.main.media_feed_item_view.view.*
 
-class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val listener: OnClick) :
+class MediaFeedAdapter(private val listener: OnClick) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var viewTypeGrid: Boolean = false
+
+    private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SongItem>() {
+
+        override fun areItemsTheSame(oldItem: SongItem, newItem: SongItem): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: SongItem, newItem: SongItem): Boolean {
+            return oldItem.id == newItem.id
+        }
+    }
+
+    private val differ = AsyncListDiffer(this, DIFF_CALLBACK)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewTypeGrid) {
@@ -31,20 +46,18 @@ class MediaFeedAdapter(private val songList: MutableList<SongItem>, private val 
     }
 
     override fun getItemCount(): Int {
-        return songList.size
+        return differ.currentList.size
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is MediaFeedItemHolder)
-            holder.bind(songList[position])
+            holder.bind(differ.currentList[position])
         else if (holder is GridItemHolder)
-            holder.bind(songList[position])
+            holder.bind(differ.currentList[position])
     }
 
-    fun addData(data: List<SongItem>) {
-        songList.clear()
-        songList.addAll(data)
-        notifyDataSetChanged()
+    fun submitData(data: List<SongItem>) {
+        differ.submitList(data)
     }
 
     inner class MediaFeedItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

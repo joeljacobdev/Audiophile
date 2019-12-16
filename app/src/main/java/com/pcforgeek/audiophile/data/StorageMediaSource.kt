@@ -105,12 +105,12 @@ class StorageMediaSource @Inject constructor(
                             mediaItem.artist
                         )
                     )
+                    songDao.insertSong(mediaItem)
                     songsList.add(mediaItem)
                 }
                 cursor.close()
 
             }
-            songDao.insertAllSongs(songsList)
             songsList
         }
     }
