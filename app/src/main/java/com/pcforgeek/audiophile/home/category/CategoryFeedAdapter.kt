@@ -39,9 +39,9 @@ class CategoryFeedAdapter(
         private val title = itemView.title
         fun bind(category: Category) {
             if (category is Category.Artist) {
-                title.text = category.title
+                title.text = category.artist
             } else if (category is Category.Album) {
-                title.text = category.title
+                title.text = category.album
             }
             itemView.setOnClickListener { listener.categoryItemClicked(category, true) }
         }

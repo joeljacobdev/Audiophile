@@ -3,34 +3,18 @@ package com.pcforgeek.audiophile.data.model
 import androidx.room.*
 
 sealed class Category {
-    @Entity
     data class Artist(
-        @ForeignKey(
-            entity = SongItem::class,
-            parentColumns = ["artistId"],
-            childColumns = ["id"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-        @ColumnInfo(name = "id")
-        @PrimaryKey
-        val id: String,
-        val title: String
+        @ColumnInfo(name = "artistId")
+        val artistId: String,
+        @ColumnInfo(name = "artist")
+        val artist: String
     ) : Category()
 
-    @Entity
     data class Album(
-        @ForeignKey(
-            entity = SongItem::class,
-            parentColumns = ["albumId"],
-            childColumns = ["id"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-        @ColumnInfo(name = "id")
-        @PrimaryKey
-        val id: String,
-        val title: String
+        @ColumnInfo(name = "albumId")
+        val albumId: String,
+        @ColumnInfo(name = "album")
+        val album: String
     ) : Category()
 
     @Entity(

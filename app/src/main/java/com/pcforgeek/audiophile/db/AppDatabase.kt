@@ -3,14 +3,13 @@ package com.pcforgeek.audiophile.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.pcforgeek.audiophile.data.model.BlacklistPath
-import com.pcforgeek.audiophile.data.model.Category
-import com.pcforgeek.audiophile.data.model.PlaylistItem
-import com.pcforgeek.audiophile.data.model.SongItem
+import com.pcforgeek.audiophile.data.model.*
 
 @TypeConverters(value = [TypeConverter::class])
 @Database(
-    entities = [SongItem::class, Category.Album::class, Category.Playlist::class, Category.Artist::class, PlaylistItem::class, BlacklistPath::class],
+    entities = [SongItem::class, Category.Playlist::class,
+        PlaylistItem::class, BlacklistPath::class, ArtistSongItem::class,
+        AlbumSongItem::class],
     version = 1,
     exportSchema = false
 )

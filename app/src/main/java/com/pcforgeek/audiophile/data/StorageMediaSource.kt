@@ -5,6 +5,8 @@ import android.content.Context
 import android.provider.MediaStore
 import androidx.core.net.toUri
 import com.pcforgeek.audiophile.App
+import com.pcforgeek.audiophile.data.model.AlbumSongItem
+import com.pcforgeek.audiophile.data.model.ArtistSongItem
 import com.pcforgeek.audiophile.data.model.Category
 import com.pcforgeek.audiophile.data.model.SongItem
 import com.pcforgeek.audiophile.db.BlacklistPathDao
@@ -93,19 +95,13 @@ class StorageMediaSource @Inject constructor(
                         artistId = it.getLong(it.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)).toString(),
                         albumArtPath = albumArtPath
                     )
-                    categoryDao.insertAlbum(
-                        Category.Album(
-                            mediaItem.albumId,
-                            mediaItem.album
-                        )
-                    )
-                    categoryDao.insertArtist(
-                        Category.Artist(
-                            mediaItem.artistId,
-                            mediaItem.artist
-                        )
-                    )
                     songDao.insertSong(mediaItem)
+                    categoryDao.insertAlbumSongItem(
+                        AlbumSongItem(mediaItem.id, mediaItem.albumId, mediaItem.album)
+                    )
+                    categoryDao.insertArtistSongItem(
+                        ArtistSongItem(mediaItem.id, mediaItem.artistId, mediaItem.artist)
+                    )
                     songsList.add(mediaItem)
                 }
                 cursor.close()

@@ -74,11 +74,11 @@ class CategoryFeedGridFragment : Fragment(),
         val id = when (category) {
             is Category.Album -> {
                 type = Type.ALBUM
-                category.id
+                category.albumId
             }
             is Category.Artist -> {
                 type = Type.ARTIST
-                category.id
+                category.artistId
             }
             else -> Type.EMPTY
         }
