@@ -8,11 +8,12 @@ import dev.joeljacob.audiophile.App
 import dev.joeljacob.audiophile.data.model.AlbumSongItem
 import dev.joeljacob.audiophile.data.model.ArtistSongItem
 import dev.joeljacob.audiophile.data.model.Category
-import dev.joeljacob.audiophile.data.model.SongItem
+import dev.joeljacob.audiophile.data.model.Song
 import dev.joeljacob.audiophile.db.BlacklistPathDao
 import dev.joeljacob.audiophile.db.CategoryDao
 import dev.joeljacob.audiophile.db.PlaylistDao
 import dev.joeljacob.audiophile.db.SongDao
+import dev.joeljacob.audiophile.util.Playlist
 import dev.joeljacob.audiophile.util.Type
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +33,7 @@ class StorageMediaSource @Inject constructor(
     private val blacklistPathDao: BlacklistPathDao
 ) : AbstractMusicSource() {
 
-    private var songList: List<SongItem> = emptyList()
+    private var songList: List<Song> = emptyList()
     private var isLoading = false
     private var selection: String? = null
     private lateinit var selectionArg: Array<String>
@@ -56,9 +57,9 @@ class StorageMediaSource @Inject constructor(
         MediaStore.Audio.Media.DATE_ADDED
     )
 
-    private suspend fun getAllAudioFiles(): List<SongItem> {
+    private suspend fun getAllAudioFiles(): List<Song> {
         return withContext(Dispatchers.IO) {
-            val songsList = mutableListOf<SongItem>()
+            val songsList = mutableListOf<Song>()
             selection = createSelectionCondition()
             val cursor = context.contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -83,7 +84,7 @@ class StorageMediaSource @Inject constructor(
                     else
                         null
 
-                    val mediaItem = SongItem(
+                    val mediaItem = Song(
                         id = it.getLong(it.getColumnIndex(MediaStore.Audio.Media._ID)).toString(),
                         artist = it.getString(it.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
                         title = it.getString(it.getColumnIndex(MediaStore.Audio.Media.TITLE)),
@@ -169,7 +170,7 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
-    override suspend fun getSongItemsForType(type: String, typeId: String): Flow<List<SongItem>> {
+    override suspend fun getSongItemsForType(type: String, typeId: String): Flow<List<Song>> {
         return when (type) {
             Type.ALL_MEDIA_ID -> getAllSongs()
             Type.ALBUM -> getSongItemsForAlbumId(typeId)
@@ -190,10 +191,10 @@ class StorageMediaSource @Inject constructor(
         isLoading = false
     }
 
-    override suspend fun delete(songItem: SongItem): Boolean {
+    override suspend fun delete(song: Song): Boolean {
         return withContext(Dispatchers.IO) {
-            if (deleteSong(songItem)) {
-                songDao.deleteSong(songItem)
+            if (deleteSong(song)) {
+                songDao.deleteSong(song)
                 true
             } else {
                 false
@@ -201,9 +202,9 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
-    private fun deleteSong(songItem: SongItem): Boolean {
+    private fun deleteSong(song: Song): Boolean {
         runCatching {
-            val file = File(songItem.mediaUri.encodedPath ?: return false)
+            val file = File(song.mediaUri.encodedPath ?: return false)
             file.delete()
             if (file.exists()) {
                 file.canonicalFile.delete()
@@ -217,7 +218,7 @@ class StorageMediaSource @Inject constructor(
                 val resolver = context.contentResolver
                 val deleteUri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    songItem.id.toLong()
+                    song.id.toLong()
                 )
                 resolver.delete(deleteUri, null, null)
             }
@@ -230,7 +231,7 @@ class StorageMediaSource @Inject constructor(
     }
 
 
-    private suspend fun getAllSongs(): Flow<List<SongItem>> {
+    private suspend fun getAllSongs(): Flow<List<Song>> {
         return withContext(Dispatchers.IO) { songDao.getAllSongsFlow() }
     }
 
@@ -252,25 +253,25 @@ class StorageMediaSource @Inject constructor(
         }
 
 
-    private suspend fun getSongItemsForAlbumId(albumId: String): Flow<List<SongItem>> {
+    private suspend fun getSongItemsForAlbumId(albumId: String): Flow<List<Song>> {
         return withContext(Dispatchers.IO) { songDao.getSongsForAlbumIdFlow(albumId) }
     }
 
-    private suspend fun getSongItemsForArtistId(artistId: String): Flow<List<SongItem>> {
+    private suspend fun getSongItemsForArtistId(artistId: String): Flow<List<Song>> {
         return withContext(Dispatchers.IO) { songDao.getSongsForArtistIdFlow(artistId) }
     }
 
-    private suspend fun getSongItemsForPlaylistId(playlistId: Int): Flow<List<SongItem>> {
+    private suspend fun getSongItemsForPlaylistId(playlistId: Int): Flow<List<Song>> {
         return withContext(Dispatchers.IO) {
             when (playlistId) {
-                Type.NOT_ONCE_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsNotPlayedOnceFlow()
-                Type.FAVOURITES_PLAYLIST -> playlistDao.getAllSongItemsFavouritedFlow()
-                Type.MOST_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsMostPlayedFlow()
+                Playlist.NOT_ONCE_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsNotPlayedOnceFlow()
+                Playlist.FAVOURITES_PLAYLIST -> playlistDao.getAllSongItemsFavouritedFlow()
+                Playlist.MOST_PLAYED_PLAYLIST -> playlistDao.getAllSongItemsMostPlayedFlow()
                 else -> playlistDao.getAllSongItemsWithPlaylistIdFlow(playlistId)
             }
         }
     }
 
     // TODO remove all when cases
-    override fun iterator(): Iterator<SongItem> = songList.iterator()
+    override fun iterator(): Iterator<Song> = songList.iterator()
 }

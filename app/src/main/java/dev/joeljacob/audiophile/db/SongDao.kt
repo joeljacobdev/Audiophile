@@ -1,23 +1,23 @@
 package dev.joeljacob.audiophile.db
 
 import androidx.room.*
-import dev.joeljacob.audiophile.data.model.SongItem
+import dev.joeljacob.audiophile.data.model.Song
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongDao {
 
     @Query("SELECT * FROM SongItem")
-    suspend fun getAllSongs(): List<SongItem>
+    suspend fun getAllSongs(): List<Song>
 
     @Query("SELECT * FROM SongItem")
-    fun getAllSongsFlow(): Flow<List<SongItem>>
+    fun getAllSongsFlow(): Flow<List<Song>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertSong(songItem: SongItem)
+    suspend fun insertSong(song: Song)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAllSongs(songs: List<SongItem>)
+    suspend fun insertAllSongs(songs: List<Song>)
 
     @Query("UPDATE SongItem set playCount=(select playCount from SongItem where id=:id)+1 where id=:id")
     suspend fun incrementPlayCount(id: String)
@@ -26,10 +26,10 @@ interface SongDao {
     suspend fun  setSongToFavourite(songId: String)
 
     @Delete
-    suspend fun deleteSong(song: SongItem)
+    suspend fun deleteSong(song: Song)
 
     @Delete
-    suspend fun deleteSongs(songs: List<SongItem>)
+    suspend fun deleteSongs(songs: List<Song>)
 
     @Query("DELETE from SongItem where id NOT IN (:filterValues)")
     suspend fun deleteRedundantItems(filterValues: List<String>)
@@ -38,15 +38,15 @@ interface SongDao {
     suspend fun deleteRedundantItemsCount(filterValues: List<String>): Int
 
     @Query("SELECT * FROM SongItem WHERE albumId = :id ")
-    suspend fun getSongsForAlbumId(id: String): List<SongItem>
+    suspend fun getSongsForAlbumId(id: String): List<Song>
 
     @Query("SELECT * FROM SongItem WHERE albumId = :id ")
-    fun getSongsForAlbumIdFlow(id: String): Flow<List<SongItem>>
+    fun getSongsForAlbumIdFlow(id: String): Flow<List<Song>>
 
     @Query("SELECT * FROM SongItem WHERE artistId = :id ")
-    suspend fun getSongsForArtistId(id: String): List<SongItem>
+    suspend fun getSongsForArtistId(id: String): List<Song>
 
     @Query("SELECT * FROM SongItem WHERE artistId = :id ")
-    fun getSongsForArtistIdFlow(id: String): Flow<List<SongItem>>
+    fun getSongsForArtistIdFlow(id: String): Flow<List<Song>>
 
 }

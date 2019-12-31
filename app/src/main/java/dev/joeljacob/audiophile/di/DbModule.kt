@@ -6,9 +6,9 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.joeljacob.audiophile.data.model.Category
 import dev.joeljacob.audiophile.db.*
-import dev.joeljacob.audiophile.util.Type
 import dagger.Module
 import dagger.Provides
+import dev.joeljacob.audiophile.util.Playlist
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Singleton
@@ -24,11 +24,11 @@ class DbModule {
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     val favouritesPlaylist = Category.Playlist("Favourites")
-                    favouritesPlaylist.id = Type.FAVOURITES_PLAYLIST
+                    favouritesPlaylist.id = Playlist.FAVOURITES_PLAYLIST
                     val mostPlayedPlaylist = Category.Playlist("Most Played")
-                    mostPlayedPlaylist.id = Type.MOST_PLAYED_PLAYLIST
+                    mostPlayedPlaylist.id = Playlist.MOST_PLAYED_PLAYLIST
                     val notPlayedOncePlaylist = Category.Playlist("Not Played Once")
-                    notPlayedOncePlaylist.id = Type.NOT_ONCE_PLAYED_PLAYLIST
+                    notPlayedOncePlaylist.id = Playlist.NOT_ONCE_PLAYED_PLAYLIST
                     GlobalScope.launch {
                         database.playlistDao().insertPlaylist(notPlayedOncePlaylist)
                         database.playlistDao().insertPlaylist(favouritesPlaylist)

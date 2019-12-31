@@ -12,7 +12,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import dev.joeljacob.audiophile.data.MusicSource
-import dev.joeljacob.audiophile.data.model.SongItem
+import dev.joeljacob.audiophile.data.model.Song
 import dev.joeljacob.audiophile.util.*
 import dev.joeljacob.audiophile.util.Type.AUDIOPHILE_TYPE
 import dev.joeljacob.audiophile.util.Type.AUDIOPHILE_TYPE_ID
@@ -107,7 +107,7 @@ class MediaPlaybackPreparer(
         musicSource.getSongItemsForType(type, typeId)
             .take(1)
             .map { songs ->
-                songs.map { song: SongItem ->
+                songs.map { song: Song ->
                     MediaMetadataCompat.Builder().from(song).build()
                 }
             }.collect {
@@ -121,16 +121,16 @@ class MediaPlaybackPreparer(
     }
 }
 
-fun MediaMetadataCompat.Builder.from(mediaItem: SongItem): MediaMetadataCompat.Builder {
-    id = mediaItem.id
-    albumId = mediaItem.albumId.toLong()
-    artistId = mediaItem.artistId.toLong()
-    title = mediaItem.title
-    displayTitle = mediaItem.displayName
-    duration = mediaItem.duration
-    album = mediaItem.album
-    artist = mediaItem.artist
-    albumArtUri = mediaItem.albumArtPath
-    mediaUri = mediaItem.mediaUri.path
+fun MediaMetadataCompat.Builder.from(song: Song): MediaMetadataCompat.Builder {
+    id = song.id
+    albumId = song.albumId.toLong()
+    artistId = song.artistId.toLong()
+    title = song.title
+    displayTitle = song.displayName
+    duration = song.duration
+    album = song.album
+    artist = song.artist
+    albumArtUri = song.albumArtPath
+    mediaUri = song.mediaUri.path
     return this
 }

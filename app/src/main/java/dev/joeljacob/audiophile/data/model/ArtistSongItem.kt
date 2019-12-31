@@ -8,7 +8,7 @@ import androidx.room.Index
 @Entity(
     primaryKeys = ["songId", "artistId"],
     foreignKeys = [ForeignKey(
-        entity = SongItem::class,
+        entity = Song::class,
         parentColumns = ["id"],
         childColumns = ["songId"],
         onDelete = ForeignKey.CASCADE,

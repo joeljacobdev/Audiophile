@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import dev.joeljacob.audiophile.R
-import dev.joeljacob.audiophile.data.model.SongItem
+import dev.joeljacob.audiophile.data.model.Song
 import kotlinx.android.synthetic.main.grid_item_view.view.*
 import kotlinx.android.synthetic.main.media_feed_item_view.view.*
 
@@ -20,13 +20,13 @@ class MediaFeedAdapter(private val listener: OnClick) :
 
     private var viewTypeGrid: Boolean = false
 
-    private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SongItem>() {
+    private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Song>() {
 
-        override fun areItemsTheSame(oldItem: SongItem, newItem: SongItem): Boolean {
+        override fun areItemsTheSame(oldItem: Song, newItem: Song): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: SongItem, newItem: SongItem): Boolean {
+        override fun areContentsTheSame(oldItem: Song, newItem: Song): Boolean {
             return oldItem.id == newItem.id
         }
     }
@@ -56,7 +56,7 @@ class MediaFeedAdapter(private val listener: OnClick) :
             holder.bind(differ.currentList[position])
     }
 
-    fun submitData(data: List<SongItem>) {
+    fun submitData(data: List<Song>) {
         differ.submitList(data)
     }
 
@@ -65,11 +65,11 @@ class MediaFeedAdapter(private val listener: OnClick) :
         private val artist = itemView.artist
         private val thumbnail = itemView.thumbnail
         private val overflowOptions = itemView.overflowOption
-        fun bind(songItem: SongItem) {
-            name.text = songItem.title
-            artist.text = songItem.artist
-            if (songItem.albumArtPath != null) {
-                Glide.with(itemView.context).load(songItem.albumArtPath)
+        fun bind(song: Song) {
+            name.text = song.title
+            artist.text = song.artist
+            if (song.albumArtPath != null) {
+                Glide.with(itemView.context).load(song.albumArtPath)
                     .error(ColorDrawable(Color.DKGRAY)).into(thumbnail)
             } else {
                 Glide.with(itemView.context).load(R.drawable.default_artwork).into(thumbnail)
@@ -80,15 +80,15 @@ class MediaFeedAdapter(private val listener: OnClick) :
                 popupMenu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.delete_menu -> {
-                            listener.deleteSong(songItem)
+                            listener.deleteSong(song)
                             true
                         }
                         R.id.add_to_playlist -> {
-                            listener.addSongToPlaylist(songItem.id)
+                            listener.addSongToPlaylist(song.id)
                             true
                         }
                         R.id.add_song_to_favourite -> {
-                            listener.setSongToFavourite(songItem.id)
+                            listener.setSongToFavourite(song.id)
                             true
                         }
                         else -> false
@@ -96,22 +96,22 @@ class MediaFeedAdapter(private val listener: OnClick) :
                 }
                 popupMenu.show()
             }
-            itemView.setOnClickListener { listener.mediaItemClicked(songItem) }
+            itemView.setOnClickListener { listener.mediaItemClicked(song) }
         }
     }
 
     inner class GridItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title = itemView.title
-        fun bind(mediaItem: SongItem) {
-            title.text = mediaItem.title
-            itemView.setOnClickListener { listener.mediaItemClicked(mediaItem, true) }
+        fun bind(song: Song) {
+            title.text = song.title
+            itemView.setOnClickListener { listener.mediaItemClicked(song, true) }
         }
     }
 
     interface OnClick {
-        fun mediaItemClicked(mediaItem: SongItem, browsable: Boolean = false)
+        fun mediaItemClicked(song: Song, browsable: Boolean = false)
         fun addSongToPlaylist(songId: String)
-        fun deleteSong(songItem: SongItem)
+        fun deleteSong(song: Song)
         fun setSongToFavourite(songId: String)
     }
 }

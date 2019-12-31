@@ -7,7 +7,7 @@ import dev.joeljacob.audiophile.data.model.*
 
 @TypeConverters(value = [TypeConverter::class])
 @Database(
-    entities = [SongItem::class, Category.Playlist::class,
+    entities = [Song::class, Category.Playlist::class,
         PlaylistItem::class, BlacklistPath::class, ArtistSongItem::class,
         AlbumSongItem::class],
     version = 1,

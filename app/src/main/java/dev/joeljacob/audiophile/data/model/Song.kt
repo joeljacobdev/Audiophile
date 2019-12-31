@@ -11,7 +11,7 @@ import dev.joeljacob.audiophile.home.song.NO_RES
     primaryKeys = ["id"],
     indices = [Index(value = ["id"], unique = true)]
 )
-data class SongItem(
+data class Song(
     @ColumnInfo(name = "id")
     val id: String,
     @ColumnInfo(name = "artistId")

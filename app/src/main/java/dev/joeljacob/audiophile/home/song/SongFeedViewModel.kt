@@ -6,7 +6,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.*
 import dev.joeljacob.audiophile.R
 import dev.joeljacob.audiophile.data.StorageMediaSource
-import dev.joeljacob.audiophile.data.model.SongItem
+import dev.joeljacob.audiophile.data.model.Song
 import dev.joeljacob.audiophile.service.EMPTY_PLAYBACK_STATE
 import dev.joeljacob.audiophile.service.MediaSessionConnection
 import dev.joeljacob.audiophile.service.NOTHING_PLAYING
@@ -23,8 +23,8 @@ class SongFeedViewModel @Inject constructor(
 ) : ViewModel() {
 
     // TODO usage?
-    private val _mediaList = MutableLiveData<List<SongItem>>()
-    val mediaList: LiveData<List<SongItem>> = _mediaList
+    private val _mediaList = MutableLiveData<List<Song>>()
+    val mediaList: LiveData<List<Song>> = _mediaList
 
     private var typeId: String = Type.EMPTY
     private var type: String = Type.EMPTY
@@ -34,7 +34,7 @@ class SongFeedViewModel @Inject constructor(
         Timber.i("SongFeedViewModel mediaId=${this.typeId} type=${this.type} set")
     }
 
-    suspend fun getSongs(): LiveData<List<SongItem>> =
+    suspend fun getSongs(): LiveData<List<Song>> =
         withContext(Dispatchers.IO) {
             return@withContext storage.getSongItemsForType(type, typeId).asLiveData()
         }
@@ -71,7 +71,7 @@ class SongFeedViewModel @Inject constructor(
     private fun updateState(
         playbackState: PlaybackStateCompat,
         mediaMetadata: MediaMetadataCompat
-    ): List<SongItem> {
+    ): List<Song> {
 
         val newResId = when (playbackState.isPlaying) {
             true -> R.drawable.ic_pause_circle_filled_black_24dp
@@ -84,17 +84,17 @@ class SongFeedViewModel @Inject constructor(
         } ?: emptyList()
     }
 
-    fun mediaItemClicked(clickedItem: SongItem) {
-        playMedia(clickedItem, pauseAllowed = false)
+    fun mediaItemClicked(song: Song) {
+        playMedia(song, pauseAllowed = false)
     }
 
-    private fun playMedia(mediaItem: SongItem, pauseAllowed: Boolean = true) {
+    private fun playMedia(song: Song, pauseAllowed: Boolean = true) {
         val nowPlaying = mediaSessionConnection.nowPlaying.value
         val transportControls = mediaSessionConnection.transportControls
 
         val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
 
-        if (isPrepared && mediaItem.id == nowPlaying?.id) {
+        if (isPrepared && song.id == nowPlaying?.id) {
             mediaSessionConnection.playbackState.value?.let { playbackState ->
                 when {
                     playbackState.isPlaying ->
@@ -102,7 +102,7 @@ class SongFeedViewModel @Inject constructor(
                     playbackState.isPlayEnabled -> transportControls.play()
                     else -> {
                         Timber.i(
-                            "Playable item clicked but neither play nor pause are enabled! (mediaId=${mediaItem.id})"
+                            "Playable item clicked but neither play nor pause are enabled! (mediaId=${song.id})"
                         )
                     }
                 }
@@ -112,7 +112,7 @@ class SongFeedViewModel @Inject constructor(
             val type = findTypeFromMediaId()
             extras.putString(Type.AUDIOPHILE_TYPE, type)
             extras.putString(Type.AUDIOPHILE_TYPE_ID, typeId)
-            transportControls.playFromMediaId(mediaItem.id, extras)
+            transportControls.playFromMediaId(song.id, extras)
         }
     }
 
@@ -142,12 +142,12 @@ class SongFeedViewModel @Inject constructor(
         }
     }
 
-    fun deleteSong(songItem: SongItem) {
+    fun deleteSong(song: Song) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (storage.delete(songItem)) {
-                Timber.i("Song deleted ${songItem.title}")
+            if (storage.delete(song)) {
+                Timber.i("Song deleted ${song.title}")
             } else {
-                Timber.i("Song=${songItem.title} at path=${songItem.mediaUri.path} not deleted ")
+                Timber.i("Song=${song.title} at path=${song.mediaUri.path} not deleted ")
             }
         }
     }

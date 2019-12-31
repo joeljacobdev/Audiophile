@@ -6,22 +6,22 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.IntDef
 import dev.joeljacob.audiophile.data.model.Category
-import dev.joeljacob.audiophile.data.model.SongItem
+import dev.joeljacob.audiophile.data.model.Song
 import dev.joeljacob.audiophile.util.*
 import kotlinx.coroutines.flow.Flow
 
-interface MusicSource : Iterable<SongItem> {
+interface MusicSource : Iterable<Song> {
 
     suspend fun load()
 
     fun whenReady(prepare: (Boolean) -> Unit): Boolean
-    fun search(term: String, extras: Bundle): List<SongItem>
+    fun search(term: String, extras: Bundle): List<Song>
     suspend fun incrementPlayCount(id: String, duration: Long, current: Long)
     suspend fun incrementPlayCount(id: String)
     suspend fun getCategoryForParentId(parentId: String): Flow<List<Category>>
-    suspend fun getSongItemsForType(type: String, typeId: String): Flow<List<SongItem>>
+    suspend fun getSongItemsForType(type: String, typeId: String): Flow<List<Song>>
     suspend fun onBlacklistUpdated()
-    suspend fun delete(songItem: SongItem): Boolean
+    suspend fun delete(song: Song): Boolean
 }
 
 
@@ -84,7 +84,7 @@ abstract class AbstractMusicSource : MusicSource {
         }
 
 
-    override fun search(term: String, extras: Bundle): List<SongItem> {
+    override fun search(term: String, extras: Bundle): List<Song> {
         // First attempt to search with the "focus" that's provided in the extras.
         val focusSearchResult = when (extras[MediaStore.EXTRA_MEDIA_FOCUS]) {
             MediaStore.Audio.Genres.ENTRY_CONTENT_TYPE -> {

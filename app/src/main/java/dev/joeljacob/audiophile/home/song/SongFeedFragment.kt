@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.joeljacob.audiophile.App
 import dev.joeljacob.audiophile.R
-import dev.joeljacob.audiophile.data.model.SongItem
+import dev.joeljacob.audiophile.data.model.Song
 import dev.joeljacob.audiophile.di.ViewModelFactory
 import dev.joeljacob.audiophile.home.MainActivity
 import dev.joeljacob.audiophile.home.MediaFeedAdapter
@@ -78,11 +78,11 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
         }
     }
 
-    override fun mediaItemClicked(mediaItem: SongItem, browsable: Boolean) {
+    override fun mediaItemClicked(song: Song, browsable: Boolean) {
         if (browsable) {
 
         } else
-            viewModel.mediaItemClicked(mediaItem)
+            viewModel.mediaItemClicked(song)
     }
 
     override fun addSongToPlaylist(songId: String) {
@@ -91,8 +91,8 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
         }
     }
 
-    override fun deleteSong(songItem: SongItem) {
-        viewModel.deleteSong(songItem)
+    override fun deleteSong(song: Song) {
+        viewModel.deleteSong(song)
     }
 
     override fun setSongToFavourite(songId: String) {
