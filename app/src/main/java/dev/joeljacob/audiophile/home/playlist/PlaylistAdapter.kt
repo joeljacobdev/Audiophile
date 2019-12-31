@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.Filter
 import dev.joeljacob.audiophile.R
 import kotlinx.android.synthetic.main.playlist_holder.view.*
+import timber.log.Timber
 
 class PlaylistAdapter(
     private val suggestions: MutableList<String>,
@@ -52,7 +53,7 @@ class PlaylistAdapter(
 
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
                 if (constraint != null && suggestions.isNotEmpty()) {
-                    println("Search term = $constraint suggestions = ${suggestions.size}")
+                    Timber.i("Search term = $constraint suggestions = ${suggestions.size}/${playlists.size}")
                     notifyDataSetChanged()
                 }
 
@@ -72,7 +73,5 @@ class PlaylistAdapter(
     fun setData(list: List<String>) {
         playlists.clear()
         playlists.addAll(list)
-        // notifyDataSetChanged() TODO do i need it? as we are displaying suggestions
-        println("PlaylistAdapter - added data to adapter size - ${playlists.size}")
     }
 }

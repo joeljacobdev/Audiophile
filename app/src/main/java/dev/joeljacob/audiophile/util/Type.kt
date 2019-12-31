@@ -3,7 +3,6 @@ package dev.joeljacob.audiophile.util
 
 object Type {
     // group of type
-    const val ROOT_MEDIA_ID = "/"
     const val ALL_MEDIA_ID = "media:/all"
     const val ARTIST_MEDIA_ID = "media:/artist"
     const val FOLDER_MEDIA_ID = "media:/folder"

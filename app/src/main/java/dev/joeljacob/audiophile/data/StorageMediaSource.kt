@@ -272,6 +272,5 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
-    // TODO remove all when cases
     override fun iterator(): Iterator<Song> = songList.iterator()
 }

@@ -54,7 +54,6 @@ interface PlaylistDao {
     @Query("SELECT count(*) FROM PlaylistItem p, SongItem s WHERE p.playlistId=:id and p.songId = s.id")
     suspend fun getAllSongItemsWithPlaylistIdCount(id: Int): Int
 
-    // for autocomplete text
     @Query("SELECT * from Playlist where id NOT IN (1, 2, 3) ")
     suspend fun getAllPlaylistForAutoComplete(): List<Category.Playlist>
 

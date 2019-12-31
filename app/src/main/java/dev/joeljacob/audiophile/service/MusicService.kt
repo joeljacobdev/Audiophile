@@ -52,7 +52,7 @@ class MusicService : MediaBrowserServiceCompat(), MediaPlaybackPreparer.OnPlayli
 
     private val exoPlayer: ExoPlayer by lazy {
         ExoPlayerFactory.newSimpleInstance(this).apply {
-            // handleAudiofocus automatically - false
+            // handle Audiofocus automatically - false
             setAudioAttributes(audiophyAttributes, false)
         }
     }
