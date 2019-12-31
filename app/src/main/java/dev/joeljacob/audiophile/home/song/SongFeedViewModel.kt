@@ -22,20 +22,21 @@ class SongFeedViewModel @Inject constructor(
     private val storage: StorageMediaSource
 ) : ViewModel() {
 
+    // TODO usage?
     private val _mediaList = MutableLiveData<List<SongItem>>()
     val mediaList: LiveData<List<SongItem>> = _mediaList
 
-    private var mediaId: String = Type.EMPTY
+    private var typeId: String = Type.EMPTY
     private var type: String = Type.EMPTY
-    fun setMediaIdAndType(mediaId: String, type: String) {
-        this.mediaId = mediaId
+    fun setMediaIdAndType(typeId: String, type: String) {
+        this.typeId = typeId
         this.type = type
-        Timber.i("SongFeedViewModel mediaId=${this.mediaId} type=${this.type} set")
+        Timber.i("SongFeedViewModel mediaId=${this.typeId} type=${this.type} set")
     }
 
     suspend fun getSongs(): LiveData<List<SongItem>> =
         withContext(Dispatchers.IO) {
-            return@withContext storage.getSongItemsForType(type, mediaId).asLiveData()
+            return@withContext storage.getSongItemsForType(type, typeId).asLiveData()
         }
 
     val rootMediaId: LiveData<String> =
@@ -110,18 +111,19 @@ class SongFeedViewModel @Inject constructor(
             val extras = Bundle()
             val type = findTypeFromMediaId()
             extras.putString(Type.AUDIOPHILE_TYPE, type)
+            extras.putString(Type.AUDIOPHILE_TYPE_ID, typeId)
             transportControls.playFromMediaId(mediaItem.id, extras)
         }
     }
 
     private fun findTypeFromMediaId(): String {
-        return when (mediaId) {
+        return when (type) {
             Type.ALL_MEDIA_ID -> Type.ALL_MEDIA_ID
-            Type.ARTIST_MEDIA_ID -> Type.EMPTY
-            Type.ALBUM_MEDIA_ID -> Type.EMPTY
-            Type.PLAYLIST_MEDIA_ID -> Type.EMPTY
+            Type.ARTIST -> Type.ARTIST
+            Type.ALBUM -> Type.ALBUM
+            Type.PLAYLIST -> Type.PLAYLIST
             else -> {
-                val split = mediaId.split("/")
+                val split = typeId.split("/")
                 if (split.size < 2)
                     return Type.EMPTY
                 when {

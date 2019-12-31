@@ -169,19 +169,14 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
-    override suspend fun getSongItemsForType(type: String, id: String): Flow<List<SongItem>> {
+    override suspend fun getSongItemsForType(type: String, typeId: String): Flow<List<SongItem>> {
         return when (type) {
             Type.ALL_MEDIA_ID -> getAllSongs()
-            Type.EMPTY -> getEmptylist()
-            Type.ALBUM -> getSongItemsForAlbumId(id)
-            Type.ARTIST -> getSongItemsForArtistId(id)
-            Type.PLAYLIST -> getSongItemsForPlaylistId(id.toInt()) // TODO use String
-            else -> getEmptylist()
+            Type.ALBUM -> getSongItemsForAlbumId(typeId)
+            Type.ARTIST -> getSongItemsForArtistId(typeId)
+            Type.PLAYLIST -> getSongItemsForPlaylistId(typeId.toInt()) // TODO use String
+            else -> flowOf(mutableListOf()) // Type.EMPTY
         }
-    }
-
-    private fun getEmptylist(): Flow<List<SongItem>> {
-        return flowOf(mutableListOf())
     }
 
     override suspend fun onBlacklistUpdated() {
@@ -276,5 +271,6 @@ class StorageMediaSource @Inject constructor(
         }
     }
 
+    // TODO remove all when cases
     override fun iterator(): Iterator<SongItem> = songList.iterator()
 }

@@ -71,7 +71,7 @@ class CategoryFeedGridFragment : Fragment(),
     override fun categoryItemClicked(category: Category, browsable: Boolean) {
         var type = Type.EMPTY
         // we are not handling / reaching playlist from CategoryGridFeedFragment, so don't handle Category.Playlist case
-        val id = when (category) {
+        val typeId = when (category) {
             is Category.Album -> {
                 type = Type.ALBUM
                 category.albumId
@@ -84,7 +84,7 @@ class CategoryFeedGridFragment : Fragment(),
         }
         fragmentManager?.let {
             it.beginTransaction()
-                .replace(R.id.gridFeedRootContainer, SongFeedFragment.newInstance(id, type))
+                .replace(R.id.gridFeedRootContainer, SongFeedFragment.newInstance(typeId, type))
                 .addToBackStack(null)
                 .commit()
         }

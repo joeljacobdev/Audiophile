@@ -57,12 +57,12 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist),
 
     override fun playlistClicked(playlist: Category.Playlist, browsable: Boolean) {
         if (browsable) {
-            val id = "${playlist.id}"
+            val typeId = "${playlist.id}"
             val type = Type.PLAYLIST
             fragmentManager?.let {
                 it.beginTransaction().replace(
                     R.id.gridFeedRootContainer,
-                    SongFeedFragment.newInstance(id, type)
+                    SongFeedFragment.newInstance(typeId, type)
                 ).addToBackStack(null)
                     .commit()
             }

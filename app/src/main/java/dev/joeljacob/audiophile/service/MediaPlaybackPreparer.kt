@@ -15,13 +15,13 @@ import dev.joeljacob.audiophile.data.MusicSource
 import dev.joeljacob.audiophile.data.model.SongItem
 import dev.joeljacob.audiophile.util.*
 import dev.joeljacob.audiophile.util.Type.AUDIOPHILE_TYPE
+import dev.joeljacob.audiophile.util.Type.AUDIOPHILE_TYPE_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 
 /**
@@ -71,12 +71,12 @@ class MediaPlaybackPreparer(
         musicSource.whenReady {
             scope.launch {
                 val type = extras?.getString(AUDIOPHILE_TYPE) ?: return@launch
-                val metadataList = buildPlaylist(type, mediaId)
+                val typeId = extras.getString(AUDIOPHILE_TYPE_ID) ?: return@launch
+                val metadataList = buildPlaylist(type, typeId)
                 val songMetadata = metadataList.find { item ->
                     item.id == mediaId
                 } ?: return@launch
 
-                Timber.i("onPlayFromMediaID=${mediaId} size=${metadataList.size}")
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
                 val indexOfItem = metadataList.indexOf(songMetadata)
                 listener.onPlaylistCreated(metadataList)
@@ -100,11 +100,11 @@ class MediaPlaybackPreparer(
 
     override fun onPrepare() = Unit
 
-    // create playlist by based on type
+    // create playlist by based on type and its typeId
     @ExperimentalCoroutinesApi
-    private suspend fun buildPlaylist(type: String, mediaId: String): List<MediaMetadataCompat> {
+    private suspend fun buildPlaylist(type: String, typeId: String): List<MediaMetadataCompat> {
         var ans: List<MediaMetadataCompat> = emptyList()
-        musicSource.getSongItemsForType(type, mediaId)
+        musicSource.getSongItemsForType(type, typeId)
             .take(1)
             .map { songs ->
                 songs.map { song: SongItem ->

@@ -22,5 +22,6 @@ object Type {
 
     const val EMPTY = ""
 
+    const val AUDIOPHILE_TYPE_ID: String = "type_id"
     const val AUDIOPHILE_TYPE = "type"
 }

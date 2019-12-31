@@ -20,11 +20,11 @@ import kotlinx.android.synthetic.main.fragment_feed.*
 import javax.inject.Inject
 
 
-private const val MEDIA_ID_ARG = "media_id_arg"
+private const val MEDIA_TYPE_ID_ARG = "media_id_arg"
 private const val MEDIA_TYPE_ARG = "media_type_arg"
 
 class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
-    private lateinit var mediaId: String
+    private lateinit var mediaTypeId: String
     private lateinit var mediaType: String
     private lateinit var mediaFeedAdapter: MediaFeedAdapter
 
@@ -40,10 +40,10 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
 
     companion object {
 
-        fun newInstance(mediaId: String, type: String): SongFeedFragment {
+        fun newInstance(typeId: String, type: String): SongFeedFragment {
             return SongFeedFragment().apply {
                 val args = Bundle()
-                args.putString(MEDIA_ID_ARG, mediaId)
+                args.putString(MEDIA_TYPE_ID_ARG, typeId)
                 args.putString(MEDIA_TYPE_ARG, type)
                 arguments = args
             }
@@ -53,9 +53,9 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         App.component.inject(this)
-        mediaId = arguments?.getString(MEDIA_ID_ARG) ?: return
+        mediaTypeId = arguments?.getString(MEDIA_TYPE_ID_ARG) ?: return
         mediaType = arguments?.getString(MEDIA_TYPE_ARG) ?: return
-        viewModel.setMediaIdAndType(mediaId, mediaType)
+        viewModel.setMediaIdAndType(mediaTypeId, mediaType)
         setupRecyclerView()
         setupObservers()
     }
