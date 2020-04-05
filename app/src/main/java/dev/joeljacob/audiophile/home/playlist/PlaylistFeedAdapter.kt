@@ -5,9 +5,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import dev.joeljacob.audiophile.R
 import dev.joeljacob.audiophile.data.model.Category
+import dev.joeljacob.audiophile.di.GlideApp
 import dev.joeljacob.audiophile.util.makeGone
 import dev.joeljacob.audiophile.util.makeVisible
 import kotlinx.android.synthetic.main.playlist_feed_item.view.*
@@ -46,7 +47,10 @@ class PlaylistFeedAdapter(
         fun bind(playlist: Category.Playlist) {
             itemView.setOnClickListener { listener.playlistClicked(playlist, browsable = true) }
             name.text = playlist.title
-            Glide.with(itemView.context).load(R.drawable.ic_playlist).into(thumbnail)
+            GlideApp.with(itemView.context)
+                .load(R.drawable.ic_playlist)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(thumbnail)
             if (playlist.id in 1..3) {
                 overflowOption.makeGone()
             } else {

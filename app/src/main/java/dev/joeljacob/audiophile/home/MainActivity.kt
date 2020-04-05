@@ -10,9 +10,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
-import com.bumptech.glide.Glide
 import dev.joeljacob.audiophile.App
 import dev.joeljacob.audiophile.R
+import dev.joeljacob.audiophile.di.GlideApp
 import dev.joeljacob.audiophile.di.ViewModelFactory
 import dev.joeljacob.audiophile.home.option.SettingFragment
 import dev.joeljacob.audiophile.home.playlist.AddToPlaylistFragment
@@ -131,12 +131,12 @@ class MainActivity : AppCompatActivity() {
             metadata.bundle.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
                 ?: "<unknown>"
         if (metadata.description.iconUri?.path != null) {
-            Glide.with(currentPlayingContainer.context)
+            GlideApp.with(currentPlayingContainer.context)
                 .load(metadata.description.iconUri?.path)
                 .error(ColorDrawable(Color.DKGRAY))
                 .into(currentMediaThumbnail)
         } else {
-            Glide.with(currentPlayingContainer.context)
+            GlideApp.with(currentPlayingContainer.context)
                 .load(R.drawable.default_artwork)
                 .into(currentMediaThumbnail)
         }

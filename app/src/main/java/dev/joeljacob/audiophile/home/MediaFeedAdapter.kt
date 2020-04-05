@@ -9,9 +9,10 @@ import android.widget.PopupMenu
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import dev.joeljacob.audiophile.R
 import dev.joeljacob.audiophile.data.model.Song
+import dev.joeljacob.audiophile.di.GlideApp
 import kotlinx.android.synthetic.main.grid_item_view.view.*
 import kotlinx.android.synthetic.main.media_feed_item_view.view.*
 
@@ -69,10 +70,16 @@ class MediaFeedAdapter(private val listener: OnClick) :
             name.text = song.title
             artist.text = song.artist
             if (song.albumArtPath != null) {
-                Glide.with(itemView.context).load(song.albumArtPath)
-                    .error(ColorDrawable(Color.DKGRAY)).into(thumbnail)
+                GlideApp.with(itemView.context)
+                    .load(song.albumArtPath)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .error(ColorDrawable(Color.DKGRAY))
+                    .into(thumbnail)
             } else {
-                Glide.with(itemView.context).load(R.drawable.default_artwork).into(thumbnail)
+                GlideApp.with(itemView.context)
+                    .load(R.drawable.default_artwork)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(thumbnail)
             }
             overflowOptions.setOnClickListener {
                 val popupMenu = PopupMenu(it.context, overflowOptions)
