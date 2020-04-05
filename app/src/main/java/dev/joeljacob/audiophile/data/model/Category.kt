@@ -22,7 +22,8 @@ sealed class Category {
         indices = [Index(value = ["id"], unique = true)]
     )
     data class Playlist(
-        val title: String
+        val title: String,
+        val createdAt: Long = System.currentTimeMillis()
     ) : Category() {
         @PrimaryKey(autoGenerate = true)
         @ColumnInfo(name = "id")

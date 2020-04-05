@@ -3,18 +3,26 @@ package dev.joeljacob.audiophile.di
 import android.app.Application
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import dev.joeljacob.audiophile.data.model.Category
-import dev.joeljacob.audiophile.db.*
 import dagger.Module
 import dagger.Provides
+import dev.joeljacob.audiophile.data.model.Category
+import dev.joeljacob.audiophile.db.*
 import dev.joeljacob.audiophile.util.Playlist
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Singleton
 
 @Module
 class DbModule {
+    private val MIGRATIONS_1_2 = object : Migration(1, 2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            Timber.i("MIGRATION RUN")
+            database.execSQL("ALTER TABLE Playlist ADD COLUMN createdAt INTEGER NOT NULL DEFAULT 0")
+        }
+    }
 
     @Provides
     @Singleton
@@ -30,14 +38,14 @@ class DbModule {
                     val notPlayedOncePlaylist = Category.Playlist("Not Played Once")
                     notPlayedOncePlaylist.id = Playlist.NOT_ONCE_PLAYED_PLAYLIST
                     GlobalScope.launch {
-                        database.playlistDao().insertPlaylist(notPlayedOncePlaylist)
                         database.playlistDao().insertPlaylist(favouritesPlaylist)
                         database.playlistDao().insertPlaylist(mostPlayedPlaylist)
+                        database.playlistDao().insertPlaylist(notPlayedOncePlaylist)
                     }
                     super.onCreate(db)
                 }
             })
-            .fallbackToDestructiveMigration()
+            .addMigrations(MIGRATIONS_1_2)
             .build()
         return database
     }

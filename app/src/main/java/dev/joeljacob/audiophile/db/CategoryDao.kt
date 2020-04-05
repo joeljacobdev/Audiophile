@@ -18,15 +18,15 @@ interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertArtistSongItem(artistSongItem: ArtistSongItem)
 
-    @Query("SELECT DISTINCT a.albumId as albumId, a.title as album FROM AlbumSongItem as a GROUP BY a.albumId")
+    @Query("SELECT DISTINCT a.albumId as albumId, a.title as album FROM AlbumSongItem as a GROUP BY a.albumId order by title ASC")
     suspend fun getAllAlbums(): List<Category.Album>
 
-    @Query("SELECT DISTINCT a.albumId as albumId, a.title as album FROM AlbumSongItem as a GROUP BY a.albumId")
+    @Query("SELECT DISTINCT a.albumId as albumId, a.title as album FROM AlbumSongItem as a GROUP BY a.albumId order by title ASC")
     fun getAllAlbumsFlow(): Flow<List<Category.Album>>
 
-    @Query("SELECT DISTINCT a.artistId as artistId, a.title as artist FROM ArtistSongItem as a GROUP BY a.artistId")
+    @Query("SELECT DISTINCT a.artistId as artistId, a.title as artist FROM ArtistSongItem as a GROUP BY a.artistId order by title ASC")
     suspend fun getAllArtists(): List<Category.Artist>
 
-    @Query("SELECT DISTINCT a.artistId as artistId, a.title as artist FROM ArtistSongItem as a GROUP BY a.artistId")
+    @Query("SELECT DISTINCT a.artistId as artistId, a.title as artist FROM ArtistSongItem as a GROUP BY a.artistId order by title ASC")
     fun getAllArtistsFlow(): Flow<List<Category.Artist>>
 }

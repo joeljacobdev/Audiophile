@@ -10,7 +10,7 @@ import dev.joeljacob.audiophile.data.model.*
     entities = [Song::class, Category.Playlist::class,
         PlaylistItem::class, BlacklistPath::class, ArtistSongItem::class,
         AlbumSongItem::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
