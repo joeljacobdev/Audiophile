@@ -1,4 +1,4 @@
-package dev.joeljacob.audiophile.home
+package dev.joeljacob.audiophile.home.song
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -16,7 +16,7 @@ import dev.joeljacob.audiophile.di.GlideApp
 import kotlinx.android.synthetic.main.grid_item_view.view.*
 import kotlinx.android.synthetic.main.media_feed_item_view.view.*
 
-class MediaFeedAdapter(private val listener: OnClick) :
+class SongFeedAdapter(private val listener: OnClick) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var viewTypeGrid: Boolean = false

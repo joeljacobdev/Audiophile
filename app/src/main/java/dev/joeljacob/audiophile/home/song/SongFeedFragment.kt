@@ -15,7 +15,6 @@ import dev.joeljacob.audiophile.R
 import dev.joeljacob.audiophile.data.model.Song
 import dev.joeljacob.audiophile.di.ViewModelFactory
 import dev.joeljacob.audiophile.home.MainActivity
-import dev.joeljacob.audiophile.home.MediaFeedAdapter
 import kotlinx.android.synthetic.main.fragment_feed.*
 import javax.inject.Inject
 
@@ -23,10 +22,10 @@ import javax.inject.Inject
 private const val MEDIA_TYPE_ID_ARG = "media_id_arg"
 private const val MEDIA_TYPE_ARG = "media_type_arg"
 
-class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
+class SongFeedFragment : Fragment(), SongFeedAdapter.OnClick {
     private lateinit var mediaTypeId: String
     private lateinit var mediaType: String
-    private lateinit var mediaFeedAdapter: MediaFeedAdapter
+    private lateinit var songFeedAdapter: SongFeedAdapter
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -63,7 +62,7 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     private fun setupObservers() {
         lifecycleScope.launchWhenResumed {
             viewModel.getSongs().observe(viewLifecycleOwner, Observer { list ->
-                mediaFeedAdapter.submitData(list)
+                songFeedAdapter.submitData(list)
             })
         }
         viewModel.rootMediaId.observe(viewLifecycleOwner, Observer { rootId ->
@@ -71,10 +70,11 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
     }
 
     private fun setupRecyclerView() {
-        mediaFeedAdapter = MediaFeedAdapter(this)
+        songFeedAdapter =
+            SongFeedAdapter(this)
         songFeed.also {
             it.layoutManager = LinearLayoutManager(context)
-            it.adapter = mediaFeedAdapter
+            it.adapter = songFeedAdapter
         }
     }
 
