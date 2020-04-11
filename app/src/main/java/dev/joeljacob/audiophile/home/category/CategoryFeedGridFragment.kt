@@ -23,6 +23,7 @@ class CategoryFeedGridFragment : Fragment(),
 
     private lateinit var mediaId: String
     private lateinit var categoryFeedAdapter: CategoryFeedAdapter
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private val viewModel: CategoryFeedViewModel by viewModels { viewModelFactory }
@@ -54,8 +55,13 @@ class CategoryFeedGridFragment : Fragment(),
         setupObservers()
     }
 
+    override fun onDestroyView() {
+        gridRecyclerView.adapter = null
+        super.onDestroyView()
+    }
+
     private fun setupObservers() {
-        viewModel.categoryItemLiveData.observe(this, Observer { list ->
+        viewModel.categoryItemLiveData.observe(viewLifecycleOwner, Observer { list ->
             categoryFeedAdapter.addData(list)
         })
     }
@@ -68,7 +74,7 @@ class CategoryFeedGridFragment : Fragment(),
         }
     }
 
-    override fun categoryItemClicked(category: Category, browsable: Boolean) {
+    override fun categoryItemClicked(category: Category) {
         var type = Type.EMPTY
         // we are not handling / reaching playlist from CategoryGridFeedFragment, so don't handle Category.Playlist case
         val typeId = when (category) {

@@ -22,6 +22,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist),
     PlaylistFeedAdapter.OnClick {
 
     private lateinit var playlistFeedAdapter: PlaylistFeedAdapter
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private val viewModel: PlaylistViewModel by viewModels { viewModelFactory }
@@ -41,6 +42,11 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist),
         viewModel.getAllPlaylist()
     }
 
+    override fun onDestroyView() {
+        linearFeedRecyclerView.adapter = null
+        super.onDestroyView()
+    }
+
     private fun setupObservers() {
         viewModel.playlist.observe(viewLifecycleOwner, Observer {
             playlistFeedAdapter.addData(it)
@@ -55,17 +61,15 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist),
         }
     }
 
-    override fun playlistClicked(playlist: Category.Playlist, browsable: Boolean) {
-        if (browsable) {
-            val typeId = "${playlist.id}"
-            val type = Type.PLAYLIST
-            fragmentManager?.let {
-                it.beginTransaction().replace(
-                    R.id.gridFeedRootContainer,
-                    SongFeedFragment.newInstance(typeId, type)
-                ).addToBackStack(null)
-                    .commit()
-            }
+    override fun playlistClicked(playlist: Category.Playlist) {
+        val typeId = "${playlist.id}"
+        val type = Type.PLAYLIST
+        fragmentManager?.let {
+            it.beginTransaction().replace(
+                R.id.gridFeedRootContainer,
+                SongFeedFragment.newInstance(typeId, type)
+            ).addToBackStack(null)
+                .commit()
         }
     }
 

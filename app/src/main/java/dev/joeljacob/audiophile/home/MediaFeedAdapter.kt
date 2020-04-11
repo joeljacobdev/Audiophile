@@ -57,11 +57,21 @@ class MediaFeedAdapter(private val listener: OnClick) :
             holder.bind(differ.currentList[position])
     }
 
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is MediaFeedItemHolder) {
+            holder.itemView.setOnClickListener(null)
+            holder.itemView.overflowOption.setOnClickListener(null)
+        } else if (holder is GridItemHolder) {
+            holder.itemView.setOnClickListener(null)
+        }
+        super.onViewDetachedFromWindow(holder)
+    }
+
     fun submitData(data: List<Song>) {
         differ.submitList(data)
     }
 
-    inner class MediaFeedItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    private inner class MediaFeedItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val name = itemView.name
         private val artist = itemView.artist
         private val thumbnail = itemView.thumbnail
@@ -95,6 +105,7 @@ class MediaFeedAdapter(private val listener: OnClick) :
                             true
                         }
                         R.id.add_song_to_favourite -> {
+                            itemView.background = ColorDrawable(Color.BLUE)
                             listener.setSongToFavourite(song.id)
                             true
                         }
@@ -107,16 +118,16 @@ class MediaFeedAdapter(private val listener: OnClick) :
         }
     }
 
-    inner class GridItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    private inner class GridItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title = itemView.title
         fun bind(song: Song) {
             title.text = song.title
-            itemView.setOnClickListener { listener.mediaItemClicked(song, true) }
+            itemView.setOnClickListener { listener.mediaItemClicked(song) }
         }
     }
 
     interface OnClick {
-        fun mediaItemClicked(song: Song, browsable: Boolean = false)
+        fun mediaItemClicked(song: Song)
         fun addSongToPlaylist(songId: String)
         fun deleteSong(song: Song)
         fun setSongToFavourite(songId: String)

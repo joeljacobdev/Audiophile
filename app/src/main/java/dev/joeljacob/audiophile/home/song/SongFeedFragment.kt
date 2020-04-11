@@ -78,10 +78,12 @@ class SongFeedFragment : Fragment(), MediaFeedAdapter.OnClick {
         }
     }
 
-    override fun mediaItemClicked(song: Song, browsable: Boolean) {
-        if (browsable) {
+    override fun onDestroyView() {
+        songFeed.adapter = null
+        super.onDestroyView()
+    }
 
-        } else
+    override fun mediaItemClicked(song: Song) {
             viewModel.mediaItemClicked(song)
     }
 

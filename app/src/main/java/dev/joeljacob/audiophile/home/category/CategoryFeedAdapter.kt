@@ -43,11 +43,11 @@ class CategoryFeedAdapter(
             } else if (category is Category.Album) {
                 title.text = category.album
             }
-            itemView.setOnClickListener { listener.categoryItemClicked(category, true) }
+            itemView.setOnClickListener { listener.categoryItemClicked(category) }
         }
     }
 
     interface OnClick {
-        fun categoryItemClicked(category: Category, browsable: Boolean = false)
+        fun categoryItemClicked(category: Category)
     }
 }

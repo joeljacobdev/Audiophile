@@ -45,7 +45,6 @@ class PlaylistFeedAdapter(
         private val name = itemView.name
         private val overflowOption = itemView.overflowOption
         fun bind(playlist: Category.Playlist) {
-            itemView.setOnClickListener { listener.playlistClicked(playlist, browsable = true) }
             name.text = playlist.title
             GlideApp.with(itemView.context)
                 .load(R.drawable.ic_playlist)
@@ -70,12 +69,12 @@ class PlaylistFeedAdapter(
                     popupMenu.show()
                 }
             }
-
+            itemView.setOnClickListener { listener.playlistClicked(playlist) }
         }
     }
 
     interface OnClick {
-        fun playlistClicked(playlist: Category.Playlist, browsable: Boolean = false)
+        fun playlistClicked(playlist: Category.Playlist)
         fun deletePlaylist(playlist: Category.Playlist)
     }
 }

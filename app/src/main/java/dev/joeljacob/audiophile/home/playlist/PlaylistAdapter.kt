@@ -56,9 +56,7 @@ class PlaylistAdapter(
                     Timber.i("Search term = $constraint suggestions = ${suggestions.size}/${playlists.size}")
                     notifyDataSetChanged()
                 }
-
             }
-
         }
     }
 

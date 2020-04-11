@@ -55,7 +55,6 @@ class AddToPlaylistFragment : Fragment(R.layout.fragment_add_to_playlist) {
                 dialog.cancel()
             }
             dialog.show()
-
         }
         playlistSearch.setOnItemClickListener { _, _, position, _ ->
             // position given is position of 'suggestion' not of 'playlists'
