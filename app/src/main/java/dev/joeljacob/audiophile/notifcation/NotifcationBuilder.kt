@@ -106,7 +106,7 @@ class NotificationBuilder(private val context: Context) {
             .setShowCancelButton(true)
 
         val notificationBuilder = builder.setContentIntent(controller.sessionActivity)
-            .setContentText(metadata.artist ?: "unknown")
+            .setContentText(metadata.artist ?: Constants.UNKNOWN)
             .setContentTitle(metadata.title)
             .setDeleteIntent(stopPendingIntent)
             .setOnlyAlertOnce(true)

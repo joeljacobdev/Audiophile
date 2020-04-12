@@ -126,7 +126,6 @@ fun MediaMetadataCompat.Builder.from(song: Song): MediaMetadataCompat.Builder {
     albumId = song.albumId.toLong()
     artistId = song.artistId.toLong()
     title = song.title
-    displayTitle = song.displayName
     duration = song.duration
     album = song.album
     artist = song.artist

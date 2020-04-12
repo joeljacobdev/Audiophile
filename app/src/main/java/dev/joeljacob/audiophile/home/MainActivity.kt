@@ -126,10 +126,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupCurrentPlayingUI(metadata: MediaMetadataCompat) {
         currentPlayingContainer.makeVisible()
         currentMediaTitle.text =
-            metadata.bundle.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "<unknown>"
+            metadata.bundle.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: Constants.UNKNOWN
         currentMediaArtist.text =
-            metadata.bundle.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
-                ?: "<unknown>"
+            metadata.bundle.getString(MediaMetadataCompat.METADATA_KEY_ARTIST) ?: Constants.UNKNOWN
         if (metadata.description.iconUri?.path != null) {
             GlideApp.with(currentPlayingContainer.context)
                 .load(metadata.description.iconUri?.path)
